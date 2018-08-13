@@ -38,7 +38,7 @@ int usage(const char *name)
 int main(int argc, char *argv[])
 {
    // Initialize the process
-   gProc = PROC_init("payload");
+   gProc = PROC_init("payload", WD_ENABLED);
    DBG_setLevel(DBG_LEVEL_ALL);
 
    // Add a signal handler call back for SIGINT signal
