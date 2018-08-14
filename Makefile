@@ -3,20 +3,27 @@ include Make.rules.arm
 override LDFLAGS+=-rdynamic -lproc -lsatpkt -lpolydrivers -lm -lrt -pthread
 override CFLAGS+=-Wall -Werror -pedantic -std=gnu99 -g -pthread
 
-SRC=payload.c
+SRC=ode-payload.c
 OBJS=$(SRC:.c=.o)
-EXECUTABLE=payload
-CMDS=
+EXECUTABLE=ode-payload
+CMDS=ode-util
 INSTALL_DEST=$(BIN_PATH)
 CMD_FILE=payload.cmd.cfg
 
 all: $(EXECUTABLE) $(CMDS)
 
-payload: $(OBJS)
+ode-payload: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@ -lz
+
+ode-util: ode-util.c
+	$(CC) $< -rdynamic -g -lproc -lsatpkt -lpolydrivers -ldl -lrt -lz -lm -o $@
 
 install: $(EXECUTABLE) $(CMDS)
 	cp $(EXECUTABLE) $(INSTALL_DEST)
+	cp $(CMDS) $(INSTALL_DEST)
+	ln -sf ode-util $(INSTALL_DEST)/ode-status
+	ln -sf ode-util $(INSTALL_DEST)/ode-led1
+	ln -sf ode-util $(INSTALL_DEST)/ode-ball1
 	$(STRIP) $(INSTALL_DEST)/$(EXECUTABLE)
 	cp $(CMD_FILE) $(ETC_PATH)
 
