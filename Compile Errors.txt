@@ -1,0 +1,204 @@
+ode-cmds.h:4:1: error: unknown type name ‘define’
+ode-cmds.h:4:31: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before numeric constant
+ode-cmds.h:62:1: error: no semicolon at end of struct or union [-Werror]
+ode-cmds.h:64:1: error: expected ‘;’, identifier or ‘(’ before ‘struct’
+ode-cmds.h:68:1: error: no semicolon at end of struct or union [-Werror]
+ode-payload.c:7:1: error: expected ‘;’, identifier or ‘(’ before ‘struct’
+ode-payload.c: In function ‘blink_led_cb’:
+ode-payload.c:68:59: error: expected expression before ‘;’ token
+ode-payload.c:74:11: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c:74:25: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c:75:9: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c:75:25: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c: In function ‘stop_led’:
+ode-payload.c:83:59: error: expected expression before ‘;’ token
+ode-payload.c:86:44: error: invalid type argument of ‘->’ (have ‘int’)
+ode-payload.c:87:9: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c:87:25: error: ‘struct ODEPayloadState’ has no member named ‘LED’
+ode-payload.c: In function ‘blink_led’:
+ode-payload.c:102:54: error: expected expression before ‘;’ token
+ode-payload.c:105:6: error: ‘dataLen’ undeclared (first use in this function)
+ode-payload.c:105:6: note: each undeclared identifier is reported only once for each function it appears in
+ode-payload.c:106:4: error: ‘return’ with no value, in function returning non-void [-Werror]
+ode-payload.c:119:6: error: ‘struct ODEBlinkData’ has no member named ‘duration’
+ode-payload.c:119:37: error: ‘struct ODEBlinkData’ has no member named ‘period’
+ode-payload.c:122:13: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:122:33: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:123:9: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:123:31: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:127:14: error: ‘struct ODEBlinkData’ has no member named ‘period’
+ode-payload.c:127:38: error: lvalue required as unary ‘&’ operand
+ode-payload.c:131:14: error: ‘struct ODEBlinkData’ has no member named ‘duration’
+ode-payload.c:131:40: error: lvalue required as unary ‘&’ operand
+ode-payload.c:134:11: error: ‘struct ODEBlinkData’ has no member named ‘period’
+ode-payload.c:134:34: error: expected expression before ‘)’ token
+ode-payload.c:135:12: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:135:32: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:136:9: error: ‘struct ODEPayloadState’ has no member named ‘gpio_used’
+ode-payload.c:136:31: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:140:14: error: ‘struct ODEBlinkData’ has no member named ‘duration’
+ode-payload.c:140:40: error: lvalue required as unary ‘&’ operand
+ode-payload.c:144:17: error: ‘src’ undeclared (first use in this function)
+ode-payload.c: In function ‘blink_led_505L’:
+ode-payload.c:152:13: error: ‘LED_505L’ undeclared (first use in this function)
+ode-payload.c:152:22: error: ‘ODE_BLINK_LED_505L_RESP’ undeclared (first use in this function)
+ode-payload.c:152:46: error: ‘period_505L’ undeclared (first use in this function)
+ode-payload.c:152:58: error: ‘duration_505L’ undeclared (first use in this function)
+ode-payload.c: In function ‘blink_led_645L’:
+ode-payload.c:158:13: error: ‘LED_645L’ undeclared (first use in this function)
+ode-payload.c:158:22: error: ‘ODE_BLINK_LED_645L_RESP’ undeclared (first use in this function)
+ode-payload.c:158:46: error: ‘period_645L’ undeclared (first use in this function)
+ode-payload.c:158:58: error: ‘duration_645L’ undeclared (first use in this function)
+ode-payload.c: In function ‘blink_led_851L’:
+ode-payload.c:164:13: error: ‘LED_851L’ undeclared (first use in this function)
+ode-payload.c:164:22: error: ‘ODE_BLINK_LED_851L_RESP’ undeclared (first use in this function)
+ode-payload.c:164:46: error: ‘period_851L’ undeclared (first use in this function)
+ode-payload.c:164:58: error: ‘duration_851L’ undeclared (first use in this function)
+ode-payload.c: In function ‘blink_led_cree’:
+ode-payload.c:170:13: error: ‘LED_CREE’ undeclared (first use in this function)
+ode-payload.c:170:22: error: ‘ODE_BLINK_LED_CREE_RESP’ undeclared (first use in this function)
+ode-payload.c:170:46: error: ‘period_CREE’ undeclared (first use in this function)
+ode-payload.c:170:58: error: ‘duration_CREE’ undeclared (first use in this function)
+ode-payload.c: In function ‘stop_deploy’:
+ode-payload.c:177:59: error: ‘arg’ undeclared (first use in this function)
+ode-payload.c:180:11: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:180:33: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:181:9: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:181:33: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c: At top level:
+ode-payload.c:190:1: error: unknown type name ‘static_int’
+ode-payload.c: In function ‘operate_deployment’:
+ode-payload.c:192:55: error: ‘data’ undeclared (first use in this function)
+ode-payload.c:195:6: error: ‘dataLen’ undeclared (first use in this function)
+ode-payload.c:196:4: error: ‘return’ with no value, in function returning non-void [-Werror]
+ode-payload.c:205:11: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:205:33: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:206:9: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:206:33: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
+ode-payload.c:210:14: error: ‘struct ODEDeployData’ has no member named ‘duration’
+ode-payload.c:210:39: error: lvalue required as unary ‘&’ operand
+ode-payload.c:213:17: error: ‘src’ undeclared (first use in this function)
+ode-payload.c: In function ‘deploy_sm_ball’:
+ode-payload.c:220:21: error: ‘SM_ball_deploy’ undeclared (first use in this function)
+ode-payload.c:220:37: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
+ode-payload.c:220:60: error: ‘SM_ball_duration’ undeclared (first use in this function)
+ode-payload.c: In function ‘deploy_lg_ball’:
+ode-payload.c:226:21: error: ‘LG_ball_deploy’ undeclared (first use in this function)
+ode-payload.c:226:37: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
+ode-payload.c:226:60: error: ‘LG_ball_duration’ undeclared (first use in this function)
+ode-payload.c: In function ‘deploy_mw’:
+ode-payload.c:233:21: error: ‘MW_en’ undeclared (first use in this function)
+ode-payload.c:233:28: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
+ode-payload.c:233:51: error: ‘Door_duration’ undeclared (first use in this function)
+ode-payload.c: In function ‘stop_feedback_led’:
+ode-payload.c:243:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:243:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:244:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:244:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c: In function ‘start_feedback_led’:
+ode-payload.c:258:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:258:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:259:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:259:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:263:14: error: ‘param’ undeclared (first use in this function)
+ode-payload.c:263:52: error: ‘LED_IRFB’ undeclared (first use in this function)
+ode-payload.c: In function ‘read_feedback’:
+ode-payload.c:271:2: error: expected expression before ‘->’ token
+ode-payload.c:271:13: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:272:2: error: unknown type name ‘bool’
+ode-payload.c:272:25: error: ‘struct ODEPayloadState’ has no member named ‘feedback_gpio’
+ode-payload.c: In function ‘read_mw_fb’:
+ode-payload.c:282:19: error: ‘MW_FB’ undeclared (first use in this function)
+ode-payload.c:283:12: error: ‘ODE_READ_MW_FB_HIGH_RESP’ undeclared (first use in this function)
+ode-payload.c:285:12: error: ‘ODE_READ_MW_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c: In function ‘read_sm_ball_fb’:
+ode-payload.c:297:2: error: statement with no effect [-Werror=unused-value]
+ode-payload.c:299:19: error: ‘SM_Ball_FB’ undeclared (first use in this function)
+ode-payload.c:300:12: error: ‘ODE_READ_SM_BALL_FB_HGH_RESP’ undeclared (first use in this function)
+ode-payload.c:302:12: error: ‘ODE_READ_SM_BALL_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c:307:2: error: statement with no effect [-Werror=unused-value]
+ode-payload.c: In function ‘read_lg_ball_fb’:
+ode-payload.c:313:2: error: statement with no effect [-Werror=unused-value]
+ode-payload.c:317:19: error: ‘LG_Ball_FB’ undeclared (first use in this function)
+ode-payload.c:318:12: error: ‘ODE_READ_SM_BALL_FB_HIGH_RESP’ undeclared (first use in this function)
+ode-payload.c:320:12: error: ‘ODE_READ_LG_BALL_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c:325:2: error: statement with no effect [-Werror=unused-value]
+ode-payload.c: In function ‘main’:
+ode-payload.c:342:7: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:343:7: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:344:7: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:347:7: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
+ode-payload.c:348:7: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:349:7: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:350:7: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:353:7: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:354:7: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:355:7: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:356:7: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:361:36: error: ‘sigint_handler’ undeclared (first use in this function)
+ode-payload.c:373:11: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:375:13: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:376:9: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:376:36: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:378:9: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:378:64: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
+ode-payload.c:380:11: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:382:13: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:383:9: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:383:36: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:385:9: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:385:64: error: ‘struct ODEPayloadState’ has no member named ‘LG_ball_deploy’
+ode-payload.c:387:11: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:389:13: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:390:9: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:390:27: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:392:9: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:392:55: error: ‘struct ODEPayloadState’ has no member named ‘MW_en’
+ode-payload.c:396:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:398:13: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:399:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:399:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:401:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:401:58: error: ‘struct ODEPayloadState’ has no member named ‘LED_CREE’
+ode-payload.c:403:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:405:13: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:406:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:406:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:408:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:408:58: error: ‘struct ODEPayloadState’ has no member named ‘LED_505L’
+ode-payload.c:410:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:412:13: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:413:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:413:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:415:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:415:58: error: ‘struct ODEPayloadState’ has no member named ‘LED_645L’
+ode-payload.c:417:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:419:13: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:420:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:420:30: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:422:9: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:422:58: error: ‘struct ODEPayloadState’ has no member named ‘LED_851L’
+ode-payload.c:426:11: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:428:13: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:429:9: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:429:28: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:431:9: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:431:56: error: ‘struct ODEPayloadState’ has no member named ‘IR_LED’
+ode-payload.c:433:11: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:435:13: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:436:9: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:436:32: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:438:9: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:438:60: error: ‘struct ODEPayloadState’ has no member named ‘SM_Ball_FB’
+ode-payload.c:440:11: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:442:13: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:443:9: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:443:32: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:445:9: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:445:60: error: ‘struct ODEPayloadState’ has no member named ‘LG_Ball_FB’
+ode-payload.c:447:11: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:449:13: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:450:9: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:450:27: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:452:9: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
+ode-payload.c:452:55: error: ‘struct ODEPayloadState’ has no member named ‘MW_FB’
