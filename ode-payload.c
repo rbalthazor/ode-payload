@@ -65,7 +65,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 // Blink LED function group
 static int blink_led_cb(int8_t LED)
 {
-	struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+	struct ODEPayloadState *state = (struct ODEPayloadState*);
 
 	// Invert our LED state
 	state->led_active = !state->led_active;
@@ -80,11 +80,11 @@ static int blink_led_cb(int8_t LED)
 
 static int stop_led(int8_t LED)
 {
-	struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+	struct ODEPayloadState *state = (struct ODEPayloadState*);
 
 	// Turn off the LED
-	if (state->led && state->led->set)
-	  state->led->set(state->led, 0);
+	if (state->led_active && state->led_active->set)
+	  state->LED->set(state->LED, 0);
 
 	// Remove the blink callback
 	if (state->led_blink_evt) {
@@ -99,7 +99,7 @@ static int stop_led(int8_t LED)
 
 static int blink_led(int8_t gpio_used, int8_t RESPONSE, uint32_t period, int32_t duration)
 {
-	struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+	struct ODEBlinkData *params = (struct ODEBlinkData*);
 	uint8_t resp = 0;
 	
 	if (dataLen != sizeof(*params))
