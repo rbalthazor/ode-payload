@@ -1,9 +1,3 @@
-ode-cmds.h:4:1: error: unknown type name ‘define’
-ode-cmds.h:4:31: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before numeric constant
-ode-cmds.h:62:1: error: no semicolon at end of struct or union [-Werror]
-ode-cmds.h:64:1: error: expected ‘;’, identifier or ‘(’ before ‘struct’
-ode-cmds.h:68:1: error: no semicolon at end of struct or union [-Werror]
-ode-payload.c:7:1: error: expected ‘;’, identifier or ‘(’ before ‘struct’
 ode-payload.c: In function ‘blink_led_cb’:
 ode-payload.c:68:59: error: expected expression before ‘;’ token
 ode-payload.c:74:11: error: ‘struct ODEPayloadState’ has no member named ‘LED’
@@ -41,24 +35,24 @@ ode-payload.c:140:40: error: lvalue required as unary ‘&’ operand
 ode-payload.c:144:17: error: ‘src’ undeclared (first use in this function)
 ode-payload.c: In function ‘blink_led_505L’:
 ode-payload.c:152:13: error: ‘LED_505L’ undeclared (first use in this function)
-ode-payload.c:152:22: error: ‘ODE_BLINK_LED_505L_RESP’ undeclared (first use in this function)
 ode-payload.c:152:46: error: ‘period_505L’ undeclared (first use in this function)
 ode-payload.c:152:58: error: ‘duration_505L’ undeclared (first use in this function)
+ode-payload.c:152:3: error: overflow in implicit constant conversion [-Werror=overflow]
 ode-payload.c: In function ‘blink_led_645L’:
 ode-payload.c:158:13: error: ‘LED_645L’ undeclared (first use in this function)
-ode-payload.c:158:22: error: ‘ODE_BLINK_LED_645L_RESP’ undeclared (first use in this function)
 ode-payload.c:158:46: error: ‘period_645L’ undeclared (first use in this function)
 ode-payload.c:158:58: error: ‘duration_645L’ undeclared (first use in this function)
+ode-payload.c:158:3: error: overflow in implicit constant conversion [-Werror=overflow]
 ode-payload.c: In function ‘blink_led_851L’:
 ode-payload.c:164:13: error: ‘LED_851L’ undeclared (first use in this function)
-ode-payload.c:164:22: error: ‘ODE_BLINK_LED_851L_RESP’ undeclared (first use in this function)
 ode-payload.c:164:46: error: ‘period_851L’ undeclared (first use in this function)
 ode-payload.c:164:58: error: ‘duration_851L’ undeclared (first use in this function)
+ode-payload.c:164:3: error: overflow in implicit constant conversion [-Werror=overflow]
 ode-payload.c: In function ‘blink_led_cree’:
 ode-payload.c:170:13: error: ‘LED_CREE’ undeclared (first use in this function)
-ode-payload.c:170:22: error: ‘ODE_BLINK_LED_CREE_RESP’ undeclared (first use in this function)
 ode-payload.c:170:46: error: ‘period_CREE’ undeclared (first use in this function)
 ode-payload.c:170:58: error: ‘duration_CREE’ undeclared (first use in this function)
+ode-payload.c:170:3: error: overflow in implicit constant conversion [-Werror=overflow]
 ode-payload.c: In function ‘stop_deploy’:
 ode-payload.c:177:59: error: ‘arg’ undeclared (first use in this function)
 ode-payload.c:180:11: error: ‘struct ODEPayloadState’ has no member named ‘enable_gpio’
@@ -80,15 +74,12 @@ ode-payload.c:210:39: error: lvalue required as unary ‘&’ operand
 ode-payload.c:213:17: error: ‘src’ undeclared (first use in this function)
 ode-payload.c: In function ‘deploy_sm_ball’:
 ode-payload.c:220:21: error: ‘SM_ball_deploy’ undeclared (first use in this function)
-ode-payload.c:220:37: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
 ode-payload.c:220:60: error: ‘SM_ball_duration’ undeclared (first use in this function)
 ode-payload.c: In function ‘deploy_lg_ball’:
 ode-payload.c:226:21: error: ‘LG_ball_deploy’ undeclared (first use in this function)
-ode-payload.c:226:37: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
 ode-payload.c:226:60: error: ‘LG_ball_duration’ undeclared (first use in this function)
 ode-payload.c: In function ‘deploy_mw’:
 ode-payload.c:233:21: error: ‘MW_en’ undeclared (first use in this function)
-ode-payload.c:233:28: error: ‘ODE_BURN_SM_BALL_RESP’ undeclared (first use in this function)
 ode-payload.c:233:51: error: ‘Door_duration’ undeclared (first use in this function)
 ode-payload.c: In function ‘stop_feedback_led’:
 ode-payload.c:243:11: error: ‘struct ODEPayloadState’ has no member named ‘LED_IRFB’
@@ -109,19 +100,16 @@ ode-payload.c:272:2: error: unknown type name ‘bool’
 ode-payload.c:272:25: error: ‘struct ODEPayloadState’ has no member named ‘feedback_gpio’
 ode-payload.c: In function ‘read_mw_fb’:
 ode-payload.c:282:19: error: ‘MW_FB’ undeclared (first use in this function)
-ode-payload.c:283:12: error: ‘ODE_READ_MW_FB_HIGH_RESP’ undeclared (first use in this function)
-ode-payload.c:285:12: error: ‘ODE_READ_MW_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c:283:3: error: suggest parentheses around arithmetic in operand of ‘|’ [-Werror=parentheses]
 ode-payload.c: In function ‘read_sm_ball_fb’:
 ode-payload.c:297:2: error: statement with no effect [-Werror=unused-value]
 ode-payload.c:299:19: error: ‘SM_Ball_FB’ undeclared (first use in this function)
-ode-payload.c:300:12: error: ‘ODE_READ_SM_BALL_FB_HGH_RESP’ undeclared (first use in this function)
-ode-payload.c:302:12: error: ‘ODE_READ_SM_BALL_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c:300:3: error: suggest parentheses around arithmetic in operand of ‘|’ [-Werror=parentheses]
 ode-payload.c:307:2: error: statement with no effect [-Werror=unused-value]
 ode-payload.c: In function ‘read_lg_ball_fb’:
 ode-payload.c:313:2: error: statement with no effect [-Werror=unused-value]
 ode-payload.c:317:19: error: ‘LG_Ball_FB’ undeclared (first use in this function)
-ode-payload.c:318:12: error: ‘ODE_READ_SM_BALL_FB_HIGH_RESP’ undeclared (first use in this function)
-ode-payload.c:320:12: error: ‘ODE_READ_LG_BALL_FB_LOW_RESP’ undeclared (first use in this function)
+ode-payload.c:318:3: error: suggest parentheses around arithmetic in operand of ‘|’ [-Werror=parentheses]
 ode-payload.c:325:2: error: statement with no effect [-Werror=unused-value]
 ode-payload.c: In function ‘main’:
 ode-payload.c:342:7: error: ‘struct ODEPayloadState’ has no member named ‘SM_ball_deploy’
