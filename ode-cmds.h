@@ -46,7 +46,7 @@ struct ODEStatus {
 	uint8_t Door;		//0 for an unburnt metlwire, 1 for a burnt meltwire
 	uint8_t SM_Ball;	//0 for an unfired nitonal, 1 if fired	
 	uint8_t LG_Ball		//0 for an unfired nitonal, 1 if fired
-} __attribute__((packed));
+} __attribute__((packed))
 
 struct ODEBlinkData {
 	uint32_t period_505L;	//half period of a 50% duty cycle flash, set to 0 for continuous operation
@@ -59,12 +59,12 @@ struct ODEBlinkData {
 	int32_t duration_CREE;
 	uint32_t period_IRFB;
 	int32_t duration_IRFB
-} __attribute__((packed));
+} __attribute__((packed))
 
 struct ODEDeployData {
 	uint32_t SM_ball_duration; //Duration of operation for deployments
 	uint32_t LG_ball_duration;
 	uint32_t Door_duration		
-} __attribute__((packed));
+} __attribute__((packed))
 
 #endif
