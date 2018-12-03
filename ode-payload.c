@@ -107,7 +107,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
             EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
    }
 
-   PROC_cmd_sockaddr(state->proc, ODE_BLINK_cree_RESP, &resp,
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_CREE_RESP, &resp,
         sizeof(resp), src);
 }
 
