@@ -41,7 +41,7 @@ struct MulticallInfo {
 } multicall[] = {
    { &ode_status, "ode-status", "-S", 
        "Display the current status of the ode-payload process" }, 
-   { &ode_cree, "ode-cree", "-L1", "Blink CREE" }, 
+   { &ode_cree, "ode-cree", "-L1", "Blink Cree LED" }, 
    { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
    { NULL, NULL, NULL, NULL }
 };
