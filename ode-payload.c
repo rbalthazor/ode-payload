@@ -11,7 +11,7 @@
 
 struct ODEPayloadState {
    ProcessData *proc;
-   struct GPIOSensor *cree;
+   struct GPIOSensor *CREE;
    int cree_active;
    void *cree_blink_evt;
    void *cree_finish_evt;
