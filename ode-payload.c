@@ -11,10 +11,10 @@
 
 struct ODEPayloadState {
    ProcessData *proc;
-   struct GPIOSensor *led1;
-   int led1_active;
-   void *led1_blink_evt;
-   void *led1_finish_evt;
+   struct GPIOSensor *cree;
+   int cree_active;
+   void *cree_blink_evt;
+   void *cree_finish_evt;
 
    void *ball1_evt;
    struct GPIOSensor *deploy_ball1;
@@ -38,41 +38,41 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
         sizeof(status), src);
 }
 
-static int blink_led1_cb(void *arg)
+static int blink_cree_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
    // Invert our LED state
-   state->led1_active = !state->led1_active;
+   state->cree_active = !state->cree_active;
 
    // Change the GPIO
-   if (state->led1 && state->led1->set)
-      state->led1->set(state->led1, state->led1_active);
+   if (state->cree && state->cree->set)
+      state->cree->set(state->cree, state->cree_active);
 
    // Reschedule the event
    return EVENT_KEEP;
 }
 
-static int stop_led1(void *arg)
+static int stop_cree(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
    // Turn off the LED
-   if (state->led1 && state->led1->set)
-      state->led1->set(state->led1, 0);
+   if (state->cree && state->cree->set)
+      state->cree->set(state->cree, 0);
 
    // Remove the blink callback
-   if (state->led1_blink_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->led1_blink_evt);
-      state->led1_blink_evt = NULL;
+   if (state->cree_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->cree_blink_evt);
+      state->cree_blink_evt = NULL;
    }
 
    // Do not reschedule this event
-   state->led1_finish_evt = NULL;
+   state->cree_finish_evt = NULL;
    return EVENT_REMOVE;
 }
 
-void blink_led1(int socket, unsigned char cmd, void * data, size_t dataLen,
+void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEBlinkData *params = (struct ODEBlinkData*)data;
@@ -82,32 +82,32 @@ void blink_led1(int socket, unsigned char cmd, void * data, size_t dataLen,
       return;
 
    // Clean up from previous events, if any
-   if (state->led1_finish_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->led1_finish_evt);
-      state->led1_finish_evt = NULL;
+   if (state->cree_finish_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->cree_finish_evt);
+      state->cree_finish_evt = NULL;
    }
-   if (state->led1_blink_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->led1_blink_evt);
-      state->led1_blink_evt = NULL;
+   if (state->cree_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->cree_blink_evt);
+      state->cree_blink_evt = NULL;
    }
 
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
       // Turn the LED on
-      state->led1_active = 1;
-      if (state->led1 && state->led1->set)
-         state->led1->set(state->led1, state->led1_active);
+      state->cree_active = 1;
+      if (state->cree && state->cree->set)
+         state->cree->set(state->cree, state->cree_active);
 
       // Create the blink event
-      state->led1_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->period)), &blink_led1_cb, state);
+      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);
 
       // Create the event to stop blinking
-      state->led1_finish_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->duration)), &stop_led1, state);
+      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
    }
 
-   PROC_cmd_sockaddr(state->proc, ODE_BLINK_LED1_RESP, &resp,
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_CREE_RESP, &resp,
         sizeof(resp), src);
 }
 
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 
    // Initialize GPIOs
    state->deploy_ball1 = create_named_gpio_device("DEPLOY_BALL1");
-   state->led1 = create_named_gpio_device("LED1");
+   state->cree = create_named_gpio_device("CREE");
 
    // Add a signal handler call back for SIGINT signal
    PROC_signal(state->proc, SIGINT, &sigint_handler, PROC_evt(state->proc));
@@ -206,12 +206,12 @@ int main(int argc, char *argv[])
       state->deploy_ball1->sensor.close((struct Sensor **)&state->deploy_ball1);
    }
 
-   if (state->led1) {
-      // Turn off the led1 GPIO if able
-      if (state->led1->set)
-         state->led1->set(state->led1, 0);
-      // Delete the led1 GPIO sensor
-      state->led1->sensor.close((struct Sensor **)&state->led1);
+   if (state->cree) {
+      // Turn off the cree GPIO if able
+      if (state->cree->set)
+         state->cree->set(state->cree, 0);
+      // Delete the cree GPIO sensor
+      state->cree->sensor.close((struct Sensor **)&state->cree);
    }
 
    PROC_cleanup(state->proc);
