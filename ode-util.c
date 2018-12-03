@@ -27,7 +27,7 @@
 struct MulticallInfo;
 
 static int ode_status(int, char**, struct MulticallInfo *);
-static int ode_led1(int, char**, struct MulticallInfo *);
+static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_ball1(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
@@ -41,7 +41,7 @@ struct MulticallInfo {
 } multicall[] = {
    { &ode_status, "ode-status", "-S", 
        "Display the current status of the ode-payload process" }, 
-   { &ode_led1, "ode-led1", "-L1", "Blink LED1" }, 
+   { &ode_cree, "ode-cree", "-L1", "Blink CREE" }, 
    { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
    { NULL, NULL, NULL, NULL }
 };
@@ -90,7 +90,7 @@ static int ode_ball1(int argc, char **argv, struct MulticallInfo * self)
    return 0;
 }
 
-static int ode_led1(int argc, char **argv, struct MulticallInfo * self) 
+static int ode_cree(int argc, char **argv, struct MulticallInfo * self) 
 {
    // struct to hold response from payload process
    struct {
@@ -103,7 +103,7 @@ static int ode_led1(int argc, char **argv, struct MulticallInfo * self)
       struct ODEBlinkData param;
    } __attribute__((packed)) send;
 
-   send.cmd = ODE_BLINK_LED1_CMD;
+   send.cmd = ODE_BLINK_CREE_CMD;
    send.param.period = htonl(DFL_BLINK_PERIOD_MS);
    send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
@@ -129,9 +129,9 @@ static int ode_led1(int argc, char **argv, struct MulticallInfo * self)
       return len;
    }
  
-   if (resp.cmd != ODE_BLINK_LED1_RESP) {
+   if (resp.cmd != ODE_BLINK_CREE_RESP) {
       printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, ODE_BLINK_LED1_RESP);
+       resp.cmd, ODE_BLINK_CREE_RESP);
       return 5;
    }
 
