@@ -27,6 +27,7 @@
 struct MulticallInfo;
 
 static int ode_status(int, char**, struct MulticallInfo *);
+static int ode_stop_all_led(int, char**, struct MulticallInfo *);
 static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
 static int ode_test(int, char**, struct MulticallInfo *);
@@ -43,6 +44,7 @@ struct MulticallInfo {
 } multicall[] = {
    { &ode_status, "ode-status", "-S", 
        "Display the current status of the ode-payload process" }, 
+   { &ode_stop_all_led, "ode-stop_all_led", "-L10", "Turn off all LEDs." }, 
    { &ode_cree, "ode-cree", "-L1", "Blink Cree LED" }, 
    { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
    { &ode_test, "ode-test", "-L2", "Test function building" }, 
@@ -189,7 +191,45 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
 
    return 0;
 }
+ode_stop_all_led
 
+static int ode_stop_all_led(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   send.cmd = ODE_STOP_ALL_LED_CMD;
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_STOP_ALL_LED_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_STOP_ALL_LED_RESP);
+      return 5;
+   }
+
+   return 0;
+}
 
 static int ode_test(int argc, char **argv, struct MulticallInfo * self) {return 0;}
 
