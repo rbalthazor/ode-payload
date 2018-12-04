@@ -29,7 +29,6 @@ struct MulticallInfo;
 static int ode_status(int, char**, struct MulticallInfo *);
 static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
-static int ode_test(int, char**, struct MulticallInfo *);
 static int ode_ball1(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
