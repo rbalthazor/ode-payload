@@ -29,6 +29,7 @@ struct MulticallInfo;
 static int ode_status(int, char**, struct MulticallInfo *);
 static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
+static int ode_test(int, char**, struct MulticallInfo *);
 static int ode_ball1(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
@@ -44,6 +45,7 @@ struct MulticallInfo {
        "Display the current status of the ode-payload process" }, 
    { &ode_cree, "ode-cree", "-L1", "Blink Cree LED" }, 
    { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
+   { &ode_test, "ode-test", "-L2", "Test function building" }, 
    { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
    { NULL, NULL, NULL, NULL }
 };
@@ -187,6 +189,9 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
 
    return 0;
 }
+
+
+static int ode_test(int argc, char **argv, struct MulticallInfo * self) {return 0;}
 
 static int ode_status(int argc, char **argv, struct MulticallInfo * self) 
 {
