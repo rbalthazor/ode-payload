@@ -71,7 +71,7 @@ static int blink_cree_cb(void *arg)
    return EVENT_KEEP;
 }
 
-static int blink_led_505L(void *arg)
+static int blink_led_505L_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
@@ -166,7 +166,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
         sizeof(resp), src);
 }
 
-void blink_led_505L_cb(int socket, unsigned char cmd, void * data, size_t dataLen,
+void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEBlinkData *params = (struct ODEBlinkData*)data;
