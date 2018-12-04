@@ -1,7 +1,6 @@
 #ifndef ODE_CMDS_H
 #define ODE_CMDS_H
 
-
 #define ODE_STOP_ALL_LED_CMD 0
 #define ODE_STOP_ALL_LED (ODE_STOP_ALL_LED_CMD | 0x80)
 
