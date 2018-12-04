@@ -26,7 +26,7 @@ struct ODEPayloadState {
 };
 
 static struct ODEPayloadState *state = NULL;
-static struct ODEStatus *sc_status = NULL;
+ODEStatus sc_status = {0,0,0,0,0,0,0,0,0,0,0};
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
@@ -35,6 +35,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
   // struct ODEStatus *sc_status = (struct ODEStatus*)data;
 
    // Fill in the values we want to return to the requestor
+/*   
    sc_status.ball1_sw=0;
    sc_status.ball2_sw=0;
    sc_status.MW_sw=0;
@@ -45,6 +46,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    sc_status.led_505L=0;
    sc_status.led_645L=0;
    sc_status.led_851L=0;
+*/
    
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
@@ -54,7 +56,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 static int blink_cree_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
+//   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
 
    // Invert our LED state
    state->cree_active = !state->cree_active;
@@ -87,7 +89,7 @@ static int blink_led_505L(void *arg)
 static int stop_cree(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
+ //  struct ODEStatus *sc_status = (struct ODEStatus*)arg;
 
    // Turn off the LED
    if (state->cree && state->cree->set)
