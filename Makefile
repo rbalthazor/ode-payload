@@ -32,4 +32,3 @@ install: $(EXECUTABLE) $(CMDS)
 
 clean:
 	rm -rf *.o $(EXECUTABLE) $(CMDS)
-
