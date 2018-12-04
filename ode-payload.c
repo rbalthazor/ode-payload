@@ -26,7 +26,7 @@ struct ODEPayloadState {
 };
 
 static struct ODEPayloadState *state = NULL;
-static struct ODEStatus sc_status = {0,0,0,0,0,0,0,0,0,0,0};
+static struct ODEStatus *sc_status = NULL;
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
