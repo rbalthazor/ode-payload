@@ -47,8 +47,8 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 	status.led_851L=codes_for_status[9];
 	
    // Send the response
-   PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &sc_status,
-        sizeof(sc_status), src);
+   PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
+        sizeof(status), src);
 }
 
 static int blink_cree_cb(void *arg)
