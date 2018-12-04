@@ -203,6 +203,17 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
         sizeof(resp), src);
 }
 
+void stop_all_led(void *arg)
+{
+	
+   stop_cree();
+   stop_led_505L();
+	
+   // Send the response
+   PROC_cmd_sockaddr(state->proc, ODE_STOP_ALL_LED_RESP, &status,
+        sizeof(status), src);
+}
+
 static int stop_ball1(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
