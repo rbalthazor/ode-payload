@@ -26,18 +26,26 @@ struct ODEPayloadState {
 };
 
 static struct ODEPayloadState *state = NULL;
+static struct ODEStatus *sc_status = NULL;
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
-                     struct sockaddr_in * src)
+                     struct sockaddr_in * src, void *arg)
 {
-   struct ODEStatus status;
+   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
 
    // Fill in the values we want to return to the requestor
-   status.sw_1 = 1;
-   status.sw_2 = 2;
-   status.sw_3 = 3;
-
+   sc_status.ball1_sw=0;
+   sc_status.ball2_sw=0;
+   sc_status.MW_sw=0;
+   sc_status.ball1_fb=0;
+   sc_status.ball2_fb=0;
+   sc_status.MW_fb=0;
+   sc_status.cree_led=0;
+   sc_status.led_505L=0;
+   sc_status.led_645L=0;
+   sc_status.led_851L=0;
+   
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
         sizeof(status), src);
@@ -46,6 +54,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 static int blink_cree_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
 
    // Invert our LED state
    state->cree_active = !state->cree_active;
@@ -53,12 +62,14 @@ static int blink_cree_cb(void *arg)
    // Change the GPIO
    if (state->cree && state->cree->set)
       state->cree->set(state->cree, state->cree_active);
-
+  
+   sc_status.cree_led=1;
+	 
    // Reschedule the event
    return EVENT_KEEP;
 }
 
-static int blink_led_505L_cb(void *arg)
+static int blink_led_505L(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
@@ -76,6 +87,7 @@ static int blink_led_505L_cb(void *arg)
 static int stop_cree(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
 
    // Turn off the LED
    if (state->cree && state->cree->set)
@@ -86,6 +98,8 @@ static int stop_cree(void *arg)
       EVT_sched_remove(PROC_evt(state->proc), state->cree_blink_evt);
       state->cree_blink_evt = NULL;
    }
+
+   sc_status.cree_led=0;
 
    // Do not reschedule this event
    state->cree_finish_evt = NULL;
