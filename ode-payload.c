@@ -49,8 +49,8 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 */
    
    // Send the response
-   PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
-        sizeof(status), src);
+   PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &sc_status,
+        sizeof(sc_status), src);
 }
 
 static int blink_cree_cb(void *arg)
@@ -65,7 +65,7 @@ static int blink_cree_cb(void *arg)
    if (state->cree && state->cree->set)
       state->cree->set(state->cree, state->cree_active);
   
-   sc_status.cree_led=1;
+   sc_status->cree_led=1;
 	 
    // Reschedule the event
    return EVENT_KEEP;
@@ -101,7 +101,7 @@ static int stop_cree(void *arg)
       state->cree_blink_evt = NULL;
    }
 
-   sc_status.cree_led=0;
+   sc_status->cree_led=0;
 
    // Do not reschedule this event
    state->cree_finish_evt = NULL;
@@ -166,7 +166,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
         sizeof(resp), src);
 }
 
-void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
+void blink_led_505L_cb(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEBlinkData *params = (struct ODEBlinkData*)data;
