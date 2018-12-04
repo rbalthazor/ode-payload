@@ -22,7 +22,7 @@ install: $(EXECUTABLE) $(CMDS)
 	cp $(EXECUTABLE) $(INSTALL_DEST)
 	cp $(CMDS) $(INSTALL_DEST)
 	ln -sf ode-util $(INSTALL_DEST)/ode-status
-	ln -sf ode-util $(INSTALL_DEST)/ode-led1
+	ln -sf ode-util $(INSTALL_DEST)/ode-cree
 	ln -sf ode-util $(INSTALL_DEST)/ode-ball1
 	$(STRIP) $(INSTALL_DEST)/$(EXECUTABLE)
 	cp $(CMD_FILE) $(ETC_PATH)
