@@ -35,16 +35,16 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 {
    struct ODEStatus status;
    
-	status->ball1_sw=codes_for_status[0];
-	status->ball2_sw=codes_for_status[1];
-	status->MW_sw=codes_for_status[2];
-	status->ball1_fb=codes_for_status[3];
-	status->ball2_fb=codes_for_status[4];
-	status->MW_fb=codes_for_status[5];
-	status->cree_led=codes_for_status[6];
-	status->led_505L=codes_for_status[7];
-	status->led_645L=codes_for_status[8];
-	status->led_851L=codes_for_status[9];
+	status.ball1_sw=codes_for_status[0];
+	status.ball2_sw=codes_for_status[1];
+	status.MW_sw=codes_for_status[2];
+	status.ball1_fb=codes_for_status[3];
+	status.ball2_fb=codes_for_status[4];
+	status.MW_fb=codes_for_status[5];
+	status.cree_led=codes_for_status[6];
+	status.led_505L=codes_for_status[7];
+	status.led_645L=codes_for_status[8];
+	status.led_851L=codes_for_status[9];
 	
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &sc_status,
