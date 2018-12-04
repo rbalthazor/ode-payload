@@ -58,7 +58,7 @@ static int blink_cree_cb(void *arg)
    return EVENT_KEEP;
 }
 
-static int blink_led_505L(void *arg)
+static int blink_led_505L_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
