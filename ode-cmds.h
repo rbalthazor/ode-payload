@@ -7,6 +7,9 @@
 #define ODE_BLINK_CREE_CMD 7
 #define ODE_BLINK_CREE_RESP (ODE_BLINK_CREE_CMD | 0x80)
 
+#define ODE_BURN_BALL1_CMD 10
+#define ODE_BURN_BALL1_RESP (ODE_BURN_BALL1_CMD | 0x80)
+
 struct ODEStatus {
    uint8_t sw_1;
    uint8_t sw_2;
