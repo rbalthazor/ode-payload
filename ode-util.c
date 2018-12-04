@@ -231,10 +231,20 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
 
    // print out returned status values   
    // printf("Total Packets Read: %d\n", ntohl(resp.status.totalSerRead));
-   printf("SW 1: %d\n", resp.status.sw_1);
-   printf("SW 2: %d\n", resp.status.sw_2);
-   printf("SW 3: %d\n", resp.status.sw_3);
+   // printf("SW 1: %d\n", resp.status.sw_1);
+   // printf("SW 2: %d\n", resp.status.sw_2);
+   // printf("SW 3: %d\n", resp.status.sw_3);
    
+	printf("Ball 1 deployed: %d\n", resp.status.ball1_sw);
+	printf("Ball 2 deployed: %d\n", resp.status.ball2_sw);
+	printf("Meltwire deployed: %d\n", resp.status.MW_sw);
+	printf("Ball 1 fb sw: %d\n", resp.status.ball1_fb);
+	printf("Ball 2 fb sw: %d\n", resp.status.ball2_fb);
+	printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
+	printf("Cree LED status: %d\n", resp.status.cree_led);
+	printf("LED 505L status: %d\n", resp.status.led_505L);
+	printf("LED 645L status: %d\n", resp.status.led_645L);
+	printf("LED 851L status: %d\n", resp.status.led_851L);   
    return 0;
 }
 
