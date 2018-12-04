@@ -32,7 +32,7 @@ static struct ODEStatus *sc_status = NULL;
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
-   struct ODEStatus *sc_status = (struct ODEStatus*);
+   struct ODEStatus *sc_status = (struct ODEStatus*)data;
 
    // Fill in the values we want to return to the requestor
    sc_status.ball1_sw=0;
