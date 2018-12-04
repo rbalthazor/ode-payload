@@ -7,13 +7,47 @@
 #define ODE_BLINK_CREE_CMD 7
 #define ODE_BLINK_CREE_RESP (ODE_BLINK_CREE_CMD | 0x80)
 
-#define ODE_BURN_BALL1_CMD 10
-#define ODE_BURN_BALL1_RESP (ODE_BURN_BALL1_CMD | 0x80)
+
+
+
+#define ODE_BLINK_LED_645L_CMD 5
+#define ODE_BLINK_LED_645L_RESP (ODE_BLINK_LED_645L_CMD | 0x80)
+
+#define ODE_BLINK_LED_851L_CMD 6
+#define ODE_BLINK_LED_851L_RESP (ODE_BLINK_LED_851L_CMD | 0x80)
+
+#define ODE_BURN_SM_BALL_CMD 8
+#define ODE_BURN_SM_BALL_RESP (ODE_BURN_SM_BALL_CMD | 0x80)
+
+#define ODE_BURN_LG_BALL_CMD 12
+#define ODE_BURN_LG_BALL_RESP (ODE_BURN_LG_BALL_CMD | 0x80)
+
+#define ODE_BURN_MELTWIRE_CMD 13
+#define ODE_BURN_MELTWIRE_RESP (ODE_BURN_MELTWIRE_CMD | 0x80)
+
+#define ODE_READ_MW_FB_CMD 1
+#define ODE_READ_MW_FB_LOW_RESP (ODE_READ_MW_FB_CMD | 0x80)
+#define ODE_READ_MW_FB_HIGH_RESP (ODE_READ_MW_FB_CMD+0x08 | 0x80) //Can be 1 or 9
+
+#define ODE_READ_SM_BALL_FB_CMD 2
+#define ODE_READ_SM_BALL_FB_LOW_RESP (ODE_READ_SM_BALL_FB_CMD | 0x80)
+#define ODE_READ_SM_BALL_FB_HGH_RESP (ODE_READ_SM_BALL_FB_CMD+0x08 | 0x80) //can be 2 or 10
+
+#define ODE_READ_LG_BALL_FB_CMD 3
+#define ODE_READ_LG_BALL_FB_LOW_RESP (ODE_READ_LG_BALL_FB_CMD | 0x80)
+#define ODE_READ_SM_BALL_FB_HIGH_RESP (ODE_READ_SM_BALL_FB_CMD+0x08 | 0x80) //can be 3 or 11
 
 struct ODEStatus {
-   uint8_t sw_1;
-   uint8_t sw_2;
-   uint8_t sw_3;
+   uint8_t ball1_sw;
+   uint8_t ball2_sw;
+   uint8_t MW_sw;
+   uint8_t ball1_fb;
+   uint8_t ball2_fb;
+   uint8_t MW_fb;
+   uint8_t cree_led;
+   uint8_t led_505L;
+   uint8_t led_645L;
+   uint8_t led_851L;
 } __attribute__((packed));
 
 struct ODEBlinkData {
