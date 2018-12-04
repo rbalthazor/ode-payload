@@ -30,9 +30,9 @@ static struct ODEStatus *sc_status = NULL;
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
-                     struct sockaddr_in * src, void *arg)
+                     struct sockaddr_in * src)
 {
-   struct ODEStatus *sc_status = (struct ODEStatus*)arg;
+   struct ODEStatus *sc_status = (struct ODEStatus*);
 
    // Fill in the values we want to return to the requestor
    sc_status.ball1_sw=0;
