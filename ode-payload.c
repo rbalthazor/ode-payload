@@ -205,13 +205,19 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
 
 void stop_all_led(void *arg)
 {
+   uint8_t resp = 0;
 	
-   stop_cree();
-   stop_led_505L();
+   // Create the event to stop blinking
+   state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
+
+   // Create the event to stop blinking
+   state->led_505L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->duration)), &stop_led_505L, state);	
 	
    // Send the response
-   PROC_cmd_sockaddr(state->proc, ODE_STOP_ALL_LED_RESP, &status,
-        sizeof(status), src);
+   PROC_cmd_sockaddr(state->proc, ODE_STOP_ALL_LED_RESP, &resp,
+        sizeof(resp), src);
 }
 
 static int stop_ball1(void *arg)
