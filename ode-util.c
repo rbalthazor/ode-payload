@@ -28,6 +28,7 @@ struct MulticallInfo;
 
 static int ode_status(int, char**, struct MulticallInfo *);
 static int ode_cree(int, char**, struct MulticallInfo *);
+static int ode_led_505L(int, char**, struct MulticallInfo *);
 static int ode_test(int, char**, struct MulticallInfo *);
 static int ode_ball1(int, char**, struct MulticallInfo *);
 
@@ -43,6 +44,7 @@ struct MulticallInfo {
    { &ode_status, "ode-status", "-S", 
        "Display the current status of the ode-payload process" }, 
    { &ode_cree, "ode-cree", "-L1", "Blink Cree LED" }, 
+   { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
    { &ode_test, "ode-test", "-L2", "Test function building" }, 
    { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
    { NULL, NULL, NULL, NULL }
@@ -139,6 +141,55 @@ static int ode_cree(int argc, char **argv, struct MulticallInfo * self)
 
    return 0;
 }
+
+static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEBlinkData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_BLINK_LED_505L_CMD;
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+         case 'p':
+            send.param.period = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_BLINK_LED_505L_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_BLINK_LED_505L_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
 
 static int ode_test(int argc, char **argv, struct MulticallInfo * self) {return 0;}
 
