@@ -22,7 +22,6 @@ install: $(EXECUTABLE) $(CMDS)
 	cp $(EXECUTABLE) $(INSTALL_DEST)
 	cp $(CMDS) $(INSTALL_DEST)
 	ln -sf ode-util $(INSTALL_DEST)/ode-status
-	ln -sf ode-util $(INSTALL_DEST)/ode-stop_all_led
 	ln -sf ode-util $(INSTALL_DEST)/ode-cree
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_505L
 	ln -sf ode-util $(INSTALL_DEST)/ode-ball1
