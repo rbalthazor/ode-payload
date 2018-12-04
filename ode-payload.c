@@ -27,27 +27,25 @@ struct ODEPayloadState {
 
 static struct ODEPayloadState *state = NULL;
 static struct ODEStatus *sc_status = NULL;
+static char codes_for_status[10]={0};
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
-  // struct ODEStatus *sc_status = (struct ODEStatus*)data;
-
-   // Fill in the values we want to return to the requestor
-/*   
-   sc_status.ball1_sw=0;
-   sc_status.ball2_sw=0;
-   sc_status.MW_sw=0;
-   sc_status.ball1_fb=0;
-   sc_status.ball2_fb=0;
-   sc_status.MW_fb=0;
-   sc_status.cree_led=0;
-   sc_status.led_505L=0;
-   sc_status.led_645L=0;
-   sc_status.led_851L=0;
-*/
+   struct ODEStatus status;
    
+	sc_status.ball1_sw=codes_for_status[0];
+	sc_status.ball2_sw=codes_for_status[1];
+	sc_status.MW_sw=codes_for_status[2];
+	sc_status.ball1_fb=codes_for_status[3];
+	sc_status.ball2_fb=codes_for_status[4];
+	sc_status.MW_fb=codes_for_status[5];
+	sc_status.cree_led=codes_for_status[6];
+	sc_status.led_505L=codes_for_status[7];
+	sc_status.led_645L=codes_for_status[8];
+	sc_status.led_851L=codes_for_status[9];
+	
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &sc_status,
         sizeof(sc_status), src);
@@ -65,7 +63,7 @@ static int blink_cree_cb(void *arg)
    if (state->cree && state->cree->set)
       state->cree->set(state->cree, state->cree_active);
   
-   sc_status->cree_led=1;
+   codes_for_status[6]=1;
 	 
    // Reschedule the event
    return EVENT_KEEP;
@@ -101,7 +99,7 @@ static int stop_cree(void *arg)
       state->cree_blink_evt = NULL;
    }
 
-   sc_status->cree_led=0;
+   codes_for_status[6]=0;
 
    // Do not reschedule this event
    state->cree_finish_evt = NULL;
@@ -306,6 +304,7 @@ int main(int argc, char *argv[])
       // Turn off the cree GPIO if able
       if (state->cree->set)
          state->cree->set(state->cree, 0);
+	 codes_for_status[6]=0;
       // Delete the cree GPIO sensor
       state->cree->sensor.close((struct Sensor **)&state->cree);
    }
