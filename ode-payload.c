@@ -197,7 +197,7 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
             EVT_ms2tv(ntohl(params->duration)), &stop_mw_fb, state);
    }
 	
-   payload_status(socket, cmd, &data, dataLen,&src);	
+   payload_status(socket,cmd,data,dataLen,src);	
 
    PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
