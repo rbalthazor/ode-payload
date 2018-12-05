@@ -178,22 +178,12 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 
    // Only check the LED if the period and duration are > 0
    if (ntohl(params->duration) > 0) {
-      // Turn the LED on
-      state->cree_active = 1;
-      if (state->cree && state->cree->set)
-         state->cree->set(state->cree, state->cree_active);
-
+  
       // Create the event to check the door
       state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
-
-      // Create the event to stop blinking
-      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->duration)), &stop_mw_fb, state);
    }
 	
-   payload_status(socket,cmd,data,dataLen,src);	
-
    PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
 }
