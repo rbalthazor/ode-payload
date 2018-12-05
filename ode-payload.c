@@ -22,6 +22,7 @@ struct ODEPayloadState {
 	void *led_505L_finish_evt;
 	
 	struct GPIOSensor *Door_Feedback;
+	int Door_Feedback_value;
 	void *Door_Feedback_evt;
 	void *Door_Feedback_finish;
 
@@ -79,7 +80,7 @@ static int start_mw_fb(void *arg)
    codes_for_status[5] = -1;
 	
    // Read the GPIO
-  state->Door_Feedback->read(&codes_for_status[5]);
+  state->Door_Feedback_value->read(state->Door_Feedback);
 
    // Reschedule the event
    return EVENT_KEEP;
