@@ -31,6 +31,7 @@ static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
 static int ode_test(int, char**, struct MulticallInfo *);
 static int ode_ball1(int, char**, struct MulticallInfo *);
+static int mw_status(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
 // running the executable with the - flags will call that function
@@ -47,7 +48,8 @@ struct MulticallInfo {
    { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
    { &ode_test, "ode-test", "-L2", "Test function building" }, 
    { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
-   { NULL, NULL, NULL, NULL }
+   { &mw_status, "ode-mw_status", "-B1", "Check if the door is open." }, 
+  { NULL, NULL, NULL, NULL }
 };
 
 static int ode_ball1(int argc, char **argv, struct MulticallInfo * self) 
@@ -88,6 +90,50 @@ static int ode_ball1(int argc, char **argv, struct MulticallInfo * self)
    if (resp.cmd != ODE_BURN_BALL1_RESP) {
       printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
        resp.cmd, ODE_BURN_BALL1_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int mw_status(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEFeedBackData  param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_MW_STATUS_CMD;
+   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_MW_STATUS_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_MW_STATUS_RESP);
       return 5;
    }
 
