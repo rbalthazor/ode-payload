@@ -20,6 +20,10 @@ struct ODEPayloadState {
 	int led_505L_active;
 	void *led_505L_blink_evt;
 	void *led_505L_finish_evt;
+	
+	struct GPIOSensor *Door_Feedback;
+	void *Door_Feedback_evt;
+	void *Door_Feedback_finish;
 
 	void *ball1_evt;
 	struct GPIOSensor *deploy_ball1;
@@ -65,6 +69,24 @@ static int blink_cree_cb(void *arg)
   
    codes_for_status[6]=1;
 	 
+   // Reschedule the event
+   return EVENT_KEEP;
+}
+
+static int start_mw_fb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+	
+   // Read the GPIO
+   if (state->Door_Feedback && state->Door_Feedback->read)
+      state->Door_Feedback->read(state->Door_Feedback, state->Door_Feedback);
+	
+   if(state->Door_feedback){
+      codes_for_status[5]=0;
+   }else{
+      codes_for_status[5]=1;	   
+   }
+
    // Reschedule the event
    return EVENT_KEEP;
 }
@@ -123,6 +145,62 @@ static int stop_led_505L(void *arg)
    // Do not reschedule this event
    state->led_505L_finish_evt = NULL;
    return EVENT_REMOVE;
+}
+
+static int stop_mw_fb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Remove the blink callback
+   if (state->Door_Feedback_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
+      state->Door_Feedback_evt = NULL;
+   }
+
+   // Do not reschedule this event
+   state->Door_Feedback_evt = NULL;
+   return EVENT_REMOVE;
+}
+
+void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEFeedBackData *params = (struct ODEFeedBackData*)data;
+   uint8_t resp = 0;
+
+   if (dataLen != sizeof(*params))
+      return;
+
+   // Clean up from previous events, if any
+   if (state->Door_Feedback_finish) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_finish);
+      state->Door_Feedback_finish = NULL;
+   }
+   if (state->Door_Feedback_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
+      state->Door_Feedback_evt = NULL;
+   }
+
+   // Only check the LED if the period and duration are > 0
+   if (ntohl(params->duration) > 0) {
+      // Turn the LED on
+      state->cree_active = 1;
+      if (state->cree && state->cree->set)
+         state->cree->set(state->cree, state->cree_active);
+
+      // Create the event to check the door
+      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
+
+      // Create the event to stop blinking
+      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &stop_mw_fb, state);
+   }
+	
+   payload_status(socket, cmd, &data, dataLen,&src);	
+
+   PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
+        sizeof(resp), src);
 }
 
 void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
