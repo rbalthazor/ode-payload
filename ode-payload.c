@@ -80,8 +80,9 @@ static int start_mw_fb(void *arg)
    codes_for_status[5] = -1;
 	
    // Read the GPIO
-  codes_for_status[5]=read(state->Door_Feedback);
-
+  state->Door_Feedback->read(state->Door_Feedback);
+  codes_for_status[5]=state->Door_Feedback;
+	
    // Reschedule the event
    return EVENT_KEEP;
 }
