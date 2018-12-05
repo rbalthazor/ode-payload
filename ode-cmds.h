@@ -31,6 +31,10 @@ struct ODEBlinkData {
    int32_t duration;
 } __attribute__((packed));
 
+struct ODEFeedBackData {
+   int32_t duration;
+} __attribute__((packed));
+
 struct ODEDeployData {
    uint32_t duration;
 } __attribute__((packed));
