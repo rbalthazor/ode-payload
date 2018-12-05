@@ -142,21 +142,6 @@ static int stop_led_505L(void *arg)
    return EVENT_REMOVE;
 }
 
-static int stop_mw_fb(void *arg)
-{
-   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-
-   // Remove the blink callback
-   if (state->Door_Feedback_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
-      state->Door_Feedback_evt = NULL;
-   }
-
-   // Do not reschedule this event
-   state->Door_Feedback_evt = NULL;
-   return EVENT_REMOVE;
-}
-
 void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
