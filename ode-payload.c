@@ -85,6 +85,10 @@ static int start_mw_fb(void *arg)
    }else{
       codes_for_status[5] = 0;
    }
+
+   // Do not reschedule this event
+   state->Door_Feedback_finish = NULL;
+   return EVENT_REMOVE;
 }
 
 static int blink_led_505L_cb(void *arg)
