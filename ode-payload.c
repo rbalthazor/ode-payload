@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
    state->deploy_ball1 = create_named_gpio_device("DEPLOY_BALL1");
    state->cree = create_named_gpio_device("CREE");
    state->led_505L = create_named_gpio_device("LED_505L");
-
+   state->Door_Feedback = create_named_gpio_device("DOOR_FEEDBACK");
 
    // Add a signal handler call back for SIGINT signal
    PROC_signal(state->proc, SIGINT, &sigint_handler, PROC_evt(state->proc));
