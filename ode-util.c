@@ -22,6 +22,7 @@
 #define DFL_BALL_TIME_MS (15*1000)
 #define DFL_BLINK_PERIOD_MS 1000
 #define DFL_BLINK_DUR_MS (15*60*1000)
+#define DFL_FB_DUR_MS (15*60*10)
 #define WAIT_MS (4 * 1000)
 
 struct MulticallInfo;
@@ -110,7 +111,7 @@ static int mw_status(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_MW_STATUS_CMD;
-   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   send.param.duration = htonl(DFL_FB_DUR_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
