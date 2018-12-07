@@ -146,10 +146,10 @@ static int stop_led_505L(void *arg)
    return EVENT_REMOVE;
 }
 
-void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
+void mw_status((int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
-   struct ODEFeedBackData *params = (struct ODEFeedBackData*)data;
+   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
    uint8_t resp = 0;
 
    if (dataLen != sizeof(*params))
