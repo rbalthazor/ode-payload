@@ -148,6 +148,8 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEFeedBackData *params = (struct ODEFeedBackData*)data;
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   codes_for_status[5] = -1;
    uint8_t resp = 0;
 
    if (dataLen != sizeof(*params))
@@ -164,12 +166,14 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    }
 
    // Only check the LED if the period and duration are > 0
-   if (ntohl(params->duration) > 0) {
+//   if (ntohl(params->duration) > 0) {
   
       // Create the event to check the door
-      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
-   }
+//      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+//            EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
+//   }
+
+   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
 	
    PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
