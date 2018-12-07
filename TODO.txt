@@ -8,6 +8,7 @@ Todo:
 7) Make enable LED_IR function
 8) Make read IR_FB function
 9) Combine LED_IR and IR_FB functions
+11) Make a halt everything command
 10) Work with Geoff, Richard and Trey to fine tune the durations for..
     a. LED blink duration
     b. LED blink frequency
