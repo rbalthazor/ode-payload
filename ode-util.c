@@ -107,7 +107,7 @@ static int mw_status(int argc, char **argv, struct MulticallInfo * self)
 
    struct {
       uint8_t cmd;
-      struct ODEFeedBackData  param;
+      struct ODEFeedBackData param;
    } __attribute__((packed)) send;
 
    send.cmd = ODE_MW_STATUS_CMD;
