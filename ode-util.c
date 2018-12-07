@@ -22,7 +22,7 @@
 #define DFL_BALL_TIME_MS (15*1000)
 #define DFL_BLINK_PERIOD_MS 1000
 #define DFL_BLINK_DUR_MS (15*60*1000)
-#define DFL_FB_DUR_MS (1)
+#define DFL_FB_DUR_MS (10)
 #define WAIT_MS (4 * 1000)
 
 struct MulticallInfo;
