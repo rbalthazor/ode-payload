@@ -1,0 +1,15 @@
+Todo:
+1) Rename Ball1/ball2 small ball and large ball
+2) Make deploy Small ball function
+3) Make deploy large ball function
+4) Make/finish deploy door function
+5) Make blink 851 function
+6) Make blike 645 function
+7) Make enable LED_IR function
+8) Make read IR_FB function
+9) Combine LED_IR and IR_FB functions
+10) Work with Geoff, Richard and Trey to fine tune the durations for..
+    a. LED blink duration
+    b. LED blink frequency
+    c. MW duration
+    d. Small and Large ball duration
