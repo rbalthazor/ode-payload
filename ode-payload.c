@@ -75,6 +75,7 @@ static int blink_cree_cb(void *arg)
    return EVENT_KEEP;
 }
 
+
 static int start_mw_fb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
@@ -87,6 +88,7 @@ static int start_mw_fb(void *arg)
    state->Door_Feedback_finish = NULL;
    return EVENT_REMOVE;
 }
+
 
 static int blink_led_505L_cb(void *arg)
 {
@@ -148,8 +150,6 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEFeedBackData *params = (struct ODEFeedBackData*)data;
-   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-   codes_for_status[5] = -1;
    uint8_t resp = 0;
 
    if (dataLen != sizeof(*params))
@@ -173,7 +173,7 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 //            EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
 //   }
 
-   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
+   start_mw_fb;
 	
    PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
