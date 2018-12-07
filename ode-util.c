@@ -292,6 +292,7 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
 	printf("LED 505L status: %d\n", resp.status.led_505L);
 	printf("LED 645L status: %d\n", resp.status.led_645L);
 	printf("LED 851L status: %d\n", resp.status.led_851L);   
+	printf("LED IR status: %d\n", resp.status.led_IR);   
 
    return 0;
 }
