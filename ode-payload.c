@@ -75,7 +75,7 @@ static int blink_cree_cb(void *arg)
    return EVENT_KEEP;
 }
 
-
+/*
 static int start_mw_fb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
@@ -88,7 +88,7 @@ static int start_mw_fb(void *arg)
    state->Door_Feedback_finish = NULL;
    return EVENT_REMOVE;
 }
-
+*/
 
 static int blink_led_505L_cb(void *arg)
 {
@@ -149,11 +149,8 @@ static int stop_led_505L(void *arg)
 void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
-   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+   struct ODEPayloadState *state = (struct ODEPayloadState*)data;
    uint8_t resp = 0;
-
-   if (dataLen != sizeof(*params))
-      return;
 
    // Clean up from previous events, if any
    if (state->Door_Feedback_finish) {
@@ -165,13 +162,8 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
       state->Door_Feedback_evt = NULL;
    }
 
-   // Only check the LED if the period and duration are > 0
-   if (ntohl(params->duration) > 0) {
-  
-      // Create the event to check the door
-      state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->duration)), &start_mw_fb, state);
-   }
+   // Create the event to check the door
+   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
 	
    PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
