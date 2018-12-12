@@ -152,7 +152,7 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    struct ODEPayloadState *state = (struct ODEPayloadState*)data;
    uint8_t resp = 0;
 
-   // Clean up from previous events, if any
+/*   // Clean up from previous events, if any
    if (state->Door_Feedback_finish) {
       EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_finish);
       state->Door_Feedback_finish = NULL;
@@ -161,7 +161,7 @@ void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
       EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
       state->Door_Feedback_evt = NULL;
    }
-
+*/
    // Create the event to check the door
    codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
 	
