@@ -480,7 +480,7 @@ void blink_led_IR(int socket, unsigned char cmd, void * data, size_t dataLen,
             EVT_ms2tv(ntohl(params->duration)), &stop_led_IR, state);
    }
 
-   PROC_cmd_sockaddr(state->proc, ODE_BLINK_LED_IR_RESP, &resp,
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_IR_LED_RESP, &resp,
         sizeof(resp), src);
 }
 
@@ -790,8 +790,8 @@ int main(int argc, char *argv[])
    state->deploy_small_ball = create_named_gpio_device("DEPLOY_SMALL_BALL");
    state->deploy_large_ball = create_named_gpio_device("DEPLOY_LARGE_BALL");
    state->deploy_door = create_named_gpio_device("DEPLOY_DOOR");
-   state->small_ball_Feedback = create_named_gpio_device("SM_BALL_FB");
-   state->large_ball_Feedback = create_named_gpio_device("LG_BALL_FB");
+   state->Small_Ball_Feedback = create_named_gpio_device("SM_BALL_FB");
+   state->Large_Ball_Feedback = create_named_gpio_device("LG_BALL_FB");
    state->Door_Feedback = create_named_gpio_device("DOOR_FEEDBACK");
 
    // Add a signal handler call back for SIGINT signal
