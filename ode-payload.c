@@ -21,13 +21,44 @@ struct ODEPayloadState {
 	void *led_505L_blink_evt;
 	void *led_505L_finish_evt;
 	
+	struct GPIOSensor *led_645L;
+	int led_645L_active;
+	void *led_645L_blink_evt;
+	void *led_645L_finish_evt;
+	
+	struct GPIOSensor *led_851L;
+	int led_851L_active;
+	void *led_851L_blink_evt;
+	void *led_851L_finish_evt;
+	
+	struct GPIOSensor *led_IR;
+	int led_IR_active;
+	void *led_IR_blink_evt;
+	void *led_IR_finish_evt;
+	
+	void *small_ball_evt;
+	struct GPIOSensor *deploy_small_ball;
+	
+	void *large_ball_evt;
+	struct GPIOSensor *deploy_large_ball;
+	
+	void *door_evt;
+	struct GPIOSensor *deploy_door;
+	
 	struct GPIOSensor *Door_Feedback;
 	int Door_Feedback_value;
 	void *Door_Feedback_evt;
 	void *Door_Feedback_finish;
-
-	void *ball1_evt;
-	struct GPIOSensor *deploy_ball1;
+	
+	struct GPIOSensor *Small_Ball_Feedback;
+	int Small_Ball_Feedback_value;
+	void *Small_Ball_Feedback_evt;
+	void *Small_Ball_Feedback_finish;
+	
+	struct GPIOSensor *Large_Ball_Feedback;
+	int Large_Ball_Feedback_value;
+	void *Large_Ball_Feedback_evt;
+	void *Large_Ball_Feedback_finish;
 };
 
 static struct ODEPayloadState *state = NULL;
@@ -40,11 +71,11 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 {
    struct ODEStatus status;
    
-	status.ball1_sw=codes_for_status[0];
-	status.ball2_sw=codes_for_status[1];
+	status.small_ball_sw=codes_for_status[0];
+	status.large_ball_sw=codes_for_status[1];
 	status.MW_sw=codes_for_status[2];
-	status.ball1_fb=codes_for_status[3];
-	status.ball2_fb=codes_for_status[4];
+	status.small_ball_fb=codes_for_status[3];
+	status.large_ball_fb=codes_for_status[4];
 	status.MW_fb=codes_for_status[5];
 	status.cree_led=codes_for_status[6];
 	status.led_505L=codes_for_status[7];
@@ -56,6 +87,9 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
         sizeof(status), src);
 }
+
+//__________________________________________________________________
+//Blink LED call back functions
 
 static int blink_cree_cb(void *arg)
 {
@@ -75,19 +109,6 @@ static int blink_cree_cb(void *arg)
    return EVENT_KEEP;
 }
 
-static int start_mw_fb(void *arg)
-{
-   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-   codes_for_status[5] = -1;
-	
-   // Read the GPIO
-   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
-   
-   // Do not reschedule this event
-   state->Door_Feedback_finish = NULL;
-   return EVENT_REMOVE;
-}
-
 static int blink_led_505L_cb(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
@@ -98,10 +119,66 @@ static int blink_led_505L_cb(void *arg)
    // Change the GPIO
    if (state->led_505L && state->led_505L->set)
       state->led_505L->set(state->led_505L, state->led_505L_active);
+  
+   codes_for_status[7]=1;
 
    // Reschedule the event
    return EVENT_KEEP;
 }
+
+static int blink_led_645L_cb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Invert our LED state
+   state->led_645L_active = !state->led_645L_active;
+
+   // Change the GPIO
+   if (state->led_645L && state->led_645L->set)
+      state->led_645L->set(state->led_645L, state->led_645L_active);
+  
+   codes_for_status[8]=1;
+
+   // Reschedule the event
+   return EVENT_KEEP;
+}
+
+static int blink_led_851L_cb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Invert our LED state
+   state->led_851L_active = !state->led_851L_active;
+
+   // Change the GPIO
+   if (state->led_851L && state->led_851L->set)
+      state->led_851L->set(state->led_851L, state->led_851L_active);
+  
+   codes_for_status[9]=1;
+
+   // Reschedule the event
+   return EVENT_KEEP;
+}
+
+static int blink_led_IR_cb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Invert our LED state
+   state->led_IR_active = !state->led_IR_active;
+
+   // Change the GPIO
+   if (state->led_IR && state->led_IR->set)
+      state->led_IR->set(state->led_IR, state->led_IR_active);
+  
+   codes_for_status[10]=1;
+
+   // Reschedule the event
+   return EVENT_KEEP;
+}
+
+//__________________________________________________________________
+//Stop LED call back functions
 
 static int stop_cree(void *arg)
 {
@@ -138,36 +215,79 @@ static int stop_led_505L(void *arg)
       EVT_sched_remove(PROC_evt(state->proc), state->led_505L_blink_evt);
       state->led_505L_blink_evt = NULL;
    }
+  
+   codes_for_status[7]=1;
 
    // Do not reschedule this event
    state->led_505L_finish_evt = NULL;
    return EVENT_REMOVE;
 }
 
-void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
-                     struct sockaddr_in * src)
+static int stop_led_645L(void *arg)
 {
-  struct ODEBlinkData *params = (struct ODEBlinkData*)data;
-  uint8_t resp = 0;
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
-   // Clean up from previous events, if any
-   if (state->Door_Feedback_finish) {
-      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_finish);
-      state->Door_Feedback_finish = NULL;
+   // Turn off the LED
+   if (state->led_645L && state->led_645L->set)
+      state->led_645L->set(state->led_645L, 0);
+
+   // Remove the blink callback
+   if (state->led_645L_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_645L_blink_evt);
+      state->led_645L_blink_evt = NULL;
    }
-   if (state->Door_Feedback_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
-      state->Door_Feedback_evt = NULL;
-   }
-	
-   // Create the event to check the door
-//   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
-   state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(ntohl(params->period)), &start_mw_fb, state);
-	
-   PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
-        sizeof(resp), src);
+  
+   codes_for_status[8]=1;
+
+   // Do not reschedule this event
+   state->led_645L_finish_evt = NULL;
+   return EVENT_REMOVE;
 }
+
+static int stop_led_851L(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off the LED
+   if (state->led_851L && state->led_851L->set)
+      state->led_851L->set(state->led_851L, 0);
+
+   // Remove the blink callback
+   if (state->led_851L_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_851L_blink_evt);
+      state->led_851L_blink_evt = NULL;
+   }
+  
+   codes_for_status[9]=1;
+
+   // Do not reschedule this event
+   state->led_851L_finish_evt = NULL;
+   return EVENT_REMOVE;
+}
+
+static int stop_led_IR(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off the LED
+   if (state->led_IR && state->led_IR->set)
+      state->led_IR->set(state->led_IR, 0);
+
+   // Remove the blink callback
+   if (state->led_IR_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_IR_blink_evt);
+      state->led_IR_blink_evt = NULL;
+   }
+  
+   codes_for_status[10]=1;
+
+   // Do not reschedule this event
+   state->led_IR_finish_evt = NULL;
+   return EVENT_REMOVE;
+}
+
+//__________________________________________________________________
+//Blink LED functions
 
 void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
@@ -247,22 +367,183 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
         sizeof(resp), src);
 }
 
-static int stop_ball1(void *arg)
+void blink_led_645L(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+   uint8_t resp = 0;
+
+   if (dataLen != sizeof(*params))
+      return;
+
+   // Clean up from previous events, if any
+   if (state->led_645L_finish_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_645L_finish_evt);
+      state->led_645L_finish_evt = NULL;
+   }
+   if (state->led_645L_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_645L_blink_evt);
+      state->led_645L_blink_evt = NULL;
+   }
+
+   // Only drive the LED if the period and duration are > 0
+   if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
+      // Turn the LED on
+      state->led_645L_active = 1;
+      if (state->led_645L && state->led_645L->set)
+         state->led_645L->set(state->led_645L, state->led_645L_active);
+
+      // Create the blink event
+      state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->period)), &blink_led_645L_cb, state);
+
+      // Create the event to stop blinking
+      state->led_645L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &stop_led_645L, state);
+   }
+
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_LED_645L_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+   uint8_t resp = 0;
+
+   if (dataLen != sizeof(*params))
+      return;
+
+   // Clean up from previous events, if any
+   if (state->led_851L_finish_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_851L_finish_evt);
+      state->led_851L_finish_evt = NULL;
+   }
+   if (state->led_851L_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_851L_blink_evt);
+      state->led_851L_blink_evt = NULL;
+   }
+
+   // Only drive the LED if the period and duration are > 0
+   if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
+      // Turn the LED on
+      state->led_851L_active = 1;
+      if (state->led_851L && state->led_851L->set)
+         state->led_851L->set(state->led_851L, state->led_851L_active);
+
+      // Create the blink event
+      state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->period)), &blink_led_851L_cb, state);
+
+      // Create the event to stop blinking
+      state->led_851L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &stop_led_851L, state);
+   }
+
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_LED_851L_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void blink_led_IR(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+   uint8_t resp = 0;
+
+   if (dataLen != sizeof(*params))
+      return;
+
+   // Clean up from previous events, if any
+   if (state->led_IR_finish_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_IR_finish_evt);
+      state->led_IR_finish_evt = NULL;
+   }
+   if (state->led_IR_blink_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->led_IR_blink_evt);
+      state->led_IR_blink_evt = NULL;
+   }
+
+   // Only drive the LED if the period and duration are > 0
+   if (ntohl(params->fb_led_period) > 0 && ntohl(params->duration) > 0) {
+      // Turn the LED on
+      state->led_IR_active = 1;
+      if (state->led_IR && state->led_IR->set)
+         state->led_IR->set(state->led_IR, state->led_IR_active);
+
+      // Create the blink event
+      state->led_IR_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->period)), &blink_led_IR_cb, state);
+
+      // Create the event to stop blinking
+      state->led_IR_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration)), &stop_led_IR, state);
+   }
+
+   PROC_cmd_sockaddr(state->proc, ODE_BLINK_LED_IR_RESP, &resp,
+        sizeof(resp), src);
+}
+
+//__________________________________________________________________
+//Deployment functions
+//__________________________________________________________________
+//Stop deployment LEDs
+
+static int stop_small_ball(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
 
    // Turn off GPIO
-   if (state->deploy_ball1 && state->deploy_ball1->set)
-      state->deploy_ball1->set(state->deploy_ball1, 0);
+   if (state->deploy_small_ball && state->deploy_small_ball->set)
+      state->deploy_small_ball->set(state->deploy_small_ball, 0);
 
    // Zero out our event state
-   state->ball1_evt = NULL;
+   state->small_ball_evt = NULL;
+  
+   codes_for_status[0]=0;
 
    // Tell the event system to not reschedule this event
    return EVENT_REMOVE;
 }
 
-void deploy_ball1(int socket, unsigned char cmd, void * data, size_t dataLen,
+static int stop_large_ball(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off GPIO
+   if (state->deploy_large_ball && state->deploy_large_ball->set)
+      state->deploy_large_ball->set(state->deploy_large_ball, 0);
+
+   // Zero out our event state
+   state->large_ball_evt = NULL;
+  
+   codes_for_status[1]=0;
+
+   // Tell the event system to not reschedule this event
+   return EVENT_REMOVE;
+}
+
+static int stop_door(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off GPIO
+   if (state->deploy_door && state->deploy_door->set)
+      state->deploy_door->set(state->deploy_door, 0);
+
+   // Zero out our event state
+   state->door_evt = NULL;
+  
+   codes_for_status[2]=0;   
+
+   // Tell the event system to not reschedule this event
+   return EVENT_REMOVE;
+}
+
+//__________________________________________________________________
+//deployment functions
+
+void deploy_small_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEDeployData *param = (struct ODEDeployData*)data;
@@ -271,21 +552,204 @@ void deploy_ball1(int socket, unsigned char cmd, void * data, size_t dataLen,
    if (dataLen != sizeof(*param))
       return;
 
-   // Remove any preexisting ball1 deployment events
-   if (state->ball1_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->ball1_evt);
-      state->ball1_evt = NULL;
+   // Remove any preexisting small_ball deployment events
+   if (state->small_ball_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->small_ball_evt);
+      state->small_ball_evt = NULL;
    }
 
    // Drive the GPIO
-   if (state->deploy_ball1 && state->deploy_ball1->set)
-      state->deploy_ball1->set(state->deploy_ball1, 1);
+   if (state->deploy_small_ball && state->deploy_small_ball->set){
+	   
+      state->deploy_small_ball->set(state->deploy_small_ball, 1);  
+	  codes_for_status[0]=1;
+   }
 
    // Register async callback to disable GPIO
-   state->ball1_evt = EVT_sched_add(PROC_evt(state->proc),
-         EVT_ms2tv(ntohl(param->duration)), &stop_ball1, state);
+   state->small_ball_evt = EVT_sched_add(PROC_evt(state->proc),
+         EVT_ms2tv(ntohl(param->duration)), &stop_small_ball, state);
 
-   PROC_cmd_sockaddr(state->proc, ODE_BURN_BALL1_RESP, &resp,
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_SMALL_BALL_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void deploy_large_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEDeployData *param = (struct ODEDeployData*)data;
+   uint8_t resp = 1;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   // Remove any preexisting large_ball deployment events
+   if (state->large_ball_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->large_ball_evt);
+      state->large_ball_evt = NULL;
+   }
+
+   // Drive the GPIO
+   if (state->deploy_large_ball && state->deploy_large_ball->set){
+      state->deploy_large_ball->set(state->deploy_large_ball, 1);  
+      codes_for_status[1]=1;
+   }
+
+   // Register async callback to disable GPIO
+   state->large_ball_evt = EVT_sched_add(PROC_evt(state->proc),
+         EVT_ms2tv(ntohl(param->duration)), &stop_large_ball, state);
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_LARGE_BALL_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void deploy_door(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEDeployData *param = (struct ODEDeployData*)data;
+   uint8_t resp = 1;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   // Remove any preexisting door deployment events
+   if (state->door_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->door_evt);
+      state->door_evt = NULL;
+   }
+
+   // Drive the GPIO
+   if (state->deploy_door && state->deploy_door->set){
+      state->deploy_door->set(state->deploy_door, 1);
+	  codes_for_status[2]=1;
+   }  
+
+   // Register async callback to disable GPIO
+   state->door_evt = EVT_sched_add(PROC_evt(state->proc),
+         EVT_ms2tv(ntohl(param->duration)), &stop_door, state);
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_DOOR_RESP, &resp,
+        sizeof(resp), src);
+}
+
+//__________________________________________________________________
+//Feedback functions
+//__________________________________________________________________
+//Feedback start functions
+
+static int start_small_ball_fb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   codes_for_status[3] = -1;
+	
+   // Read the GPIO
+   codes_for_status[3] = state->Small_Ball_Feedback->read(state->Small_Ball_Feedback);
+   
+   // Do not reschedule this event
+   state->Small_Ball_Feedback_finish = NULL;
+   return EVENT_REMOVE;
+}
+
+static int start_large_ball_fb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   codes_for_status[4] = -1;
+	
+   // Read the GPIO
+   codes_for_status[4] = state->Large_Ball_Feedback->read(state->Large_Ball_Feedback);
+   
+   // Do not reschedule this event
+   state->Large_Ball_Feedback_finish = NULL;
+   return EVENT_REMOVE;
+}
+
+static int start_mw_fb(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   codes_for_status[5] = -1;
+	
+   // Read the GPIO
+   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
+   
+   // Do not reschedule this event
+   state->Door_Feedback_finish = NULL;
+   return EVENT_REMOVE;
+}
+
+//__________________________________________________________________
+//Feedback commands
+
+void small_ball_status(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+  struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+  uint8_t resp = 0;
+
+   // Clean up from previous events, if any
+   if (state->Small_Ball_Feedback_finish) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Small_Ball_Feedback_finish);
+      state->Small_Ball_Feedback_finish = NULL;
+   }
+   if (state->Small_Ball_Feedback_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Small_Ball_Feedback_evt);
+      state->Small_Ball_Feedback_evt = NULL;
+   }
+	
+   // Create the event to check the Small_Ball
+//   codes_for_status[5] = state->Small_Ball_Feedback->read(state->Small_Ball_Feedback);
+   state->Small_Ball_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->period)), &start_mw_fb, state);
+	
+   PROC_cmd_sockaddr(state->proc, ODE_SMALL_BALL_STATUS_RESP , &resp,
+        sizeof(resp), src);
+}
+
+void large_ball_status(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+  struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+  uint8_t resp = 0;
+
+   // Clean up from previous events, if any
+   if (state->Large_Ball_Feedback_finish) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Large_Ball_Feedback_finish);
+      state->Large_Ball_Feedback_finish = NULL;
+   }
+   if (state->Large_Ball_Feedback_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Large_Ball_Feedback_evt);
+      state->Large_Ball_Feedback_evt = NULL;
+   }
+	
+   // Create the event to check the Large_Ball
+//   codes_for_status[5] = state->Large_Ball_Feedback->read(state->Large_Ball_Feedback);
+   state->Large_Ball_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->period)), &start_small_ball_fb, state);
+	
+   PROC_cmd_sockaddr(state->proc, ODE_LARGE_BALL_STATUS_RESP , &resp,
+        sizeof(resp), src);
+}
+
+void mw_status(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+  struct ODEBlinkData *params = (struct ODEBlinkData*)data;
+  uint8_t resp = 0;
+
+   // Clean up from previous events, if any
+   if (state->Door_Feedback_finish) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_finish);
+      state->Door_Feedback_finish = NULL;
+   }
+   if (state->Door_Feedback_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
+      state->Door_Feedback_evt = NULL;
+   }
+	
+   // Create the event to check the door
+//   codes_for_status[5] = state->Door_Feedback->read(state->Door_Feedback);
+   state->Door_Feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->period)), &start_large_ball_fb, state);
+	
+   PROC_cmd_sockaddr(state->proc, ODE_MW_STATUS_RESP , &resp,
         sizeof(resp), src);
 }
 
@@ -318,9 +782,16 @@ int main(int argc, char *argv[])
    DBG_setLevel(DBG_LEVEL_ALL);
 
    // Initialize GPIOs
-   state->deploy_ball1 = create_named_gpio_device("DEPLOY_BALL1");
    state->cree = create_named_gpio_device("CREE");
    state->led_505L = create_named_gpio_device("LED_505L");
+   state->led_645L = create_named_gpio_device("LED_645L");
+   state->led_851L = create_named_gpio_device("LED_851L");
+   state->led_IR = create_named_gpio_device("LED_IR");
+   state->deploy_small_ball = create_named_gpio_device("DEPLOY_SMALL_BALL");
+   state->deploy_large_ball = create_named_gpio_device("DEPLOY_LARGE_BALL");
+   state->deploy_door = create_named_gpio_device("DEPLOY_DOOR");
+   state->small_ball_Feedback = create_named_gpio_device("SM_BALL_FB");
+   state->large_ball_Feedback = create_named_gpio_device("LG_BALL_FB");
    state->Door_Feedback = create_named_gpio_device("DOOR_FEEDBACK");
 
    // Add a signal handler call back for SIGINT signal
@@ -332,18 +803,41 @@ int main(int argc, char *argv[])
    // Clean up, whenever we exit event loop
    DBG_print(DBG_LEVEL_INFO, "Cleaning up\n");
 
-   // Clean up the ball1 deployment event
-   if (state->ball1_evt)
-      EVT_sched_remove(PROC_evt(state->proc), state->ball1_evt);
-
-   if (state->deploy_ball1) {
+   // Clean up the deployment events
+   if (state->small_ball_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->small_ball_evt);
+  
+   if (state->deploy_small_ball) {
       // Turn off the ball1 GPIO if able
-      if (state->deploy_ball1->set)
-         state->deploy_ball1->set(state->deploy_ball1, 0);
+      if (state->deploy_small_ball->set)
+         state->deploy_small_ball->set(state->deploy_small_ball, 0);
       // Delete the ball1 GPIO sensor
-      state->deploy_ball1->sensor.close((struct Sensor **)&state->deploy_ball1);
-   }
+      state->deploy_small_ball->sensor.close((struct Sensor **)&state->deploy_small_ball);
+   }   
+   
+   if (state->large_ball_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->large_ball_evt);
+  
+  if (state->deploy_large_ball) {
+      // Turn off the ball1 GPIO if able
+      if (state->deploy_large_ball->set)
+         state->deploy_large_ball->set(state->deploy_large_ball, 0);
+      // Delete the ball1 GPIO sensor
+      state->deploy_large_ball->sensor.close((struct Sensor **)&state->deploy_large_ball);
+   }   
+     
+   if (state->door_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->door_evt);
+  
+  if (state->deploy_door) {
+      // Turn off the ball1 GPIO if able
+      if (state->deploy_door->set)
+         state->deploy_door->set(state->deploy_door, 0);
+      // Delete the ball1 GPIO sensor
+      state->deploy_door->sensor.close((struct Sensor **)&state->deploy_door);
+   } 
 
+   // Clean up the LED events
    if (state->cree) {
       // Turn off the cree GPIO if able
       if (state->cree->set)
@@ -360,7 +854,30 @@ int main(int argc, char *argv[])
       // Delete the led_505L GPIO sensor
       state->led_505L->sensor.close((struct Sensor **)&state->led_505L);
    }
-
+   
+   if (state->led_645L) {
+      // Turn off the led_645L GPIO if able
+      if (state->led_645L->set)
+         state->led_645L->set(state->led_645L, 0);
+      // Delete the led_645L GPIO sensor
+      state->led_645L->sensor.close((struct Sensor **)&state->led_645L);
+   }
+      
+   if (state->led_851L) {
+      // Turn off the led_851L GPIO if able
+      if (state->led_851L->set)
+         state->led_851L->set(state->led_851L, 0);
+      // Delete the led_851L GPIO sensor
+      state->led_851L->sensor.close((struct Sensor **)&state->led_851L);
+   }
+      
+   if (state->led_IR) {
+      // Turn off the led_IR GPIO if able
+      if (state->led_IR->set)
+         state->led_IR->set(state->led_IR, 0);
+      // Delete the led_IR GPIO sensor
+      state->led_IR->sensor.close((struct Sensor **)&state->led_IR);
+   }
    PROC_cleanup(state->proc);
 
    return 0;
