@@ -109,9 +109,9 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
    // printf("SW 2: %d\n", resp.status.sw_2);
    // printf("SW 3: %d\n", resp.status.sw_3);
    
-	printf("Ball 1 deployed: %d\n", resp.status.small_ball_sw);
-	printf("Ball 2 deployed: %d\n", resp.status.large_ball_sw);
-	printf("Meltwire deployed: %d\n", resp.status.MW_sw);
+	printf("Small Ball deployment enabled: %d\n", resp.status.small_ball_sw);
+	printf("Large Ball deployment enabled: %d\n", resp.status.large_ball_sw);
+	printf("Meltwire deployment enabled: %d\n", resp.status.MW_sw);
 	printf("Ball 1 fb sw: %d\n", resp.status.small_ball_fb);
 	printf("Ball 2 fb sw: %d\n", resp.status.large_ball_fb);
 	printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
