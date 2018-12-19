@@ -59,7 +59,7 @@ struct MulticallInfo {
    { &ode_led_IR, "ode-led_IR", "-L5", "Blink IR LED" }, 
    { &ode_test, "ode-test", "-L6", "Test function building" }, 
    { &ode_deploy_small_ball, "ode-deloy_small_ball", "-B1", "Deploy small ball" }, 
-   { &ode_large_ball, "ode-deloy_large_ball", "-B2", "Deploy large ball" }, 
+   { &ode_deploy_large_ball, "ode-deploy_large_ball", "-B2", "Deploy large ball" }, 
    { &ode_deploy_door, "ode-deploy_door", "-B3", "Open door" }, 
    { &small_ball_status, "ode-small_ball_status", "-B1", "Check if the small ball is deployed." }, 
    { &large_ball_status, "ode-large_ball_status", "-B2", "Check if the large ball is deployed." }, 
@@ -109,11 +109,11 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
    // printf("SW 2: %d\n", resp.status.sw_2);
    // printf("SW 3: %d\n", resp.status.sw_3);
    
-	printf("Ball 1 deployed: %d\n", resp.status.ball1_sw);
-	printf("Ball 2 deployed: %d\n", resp.status.ball2_sw);
+	printf("Ball 1 deployed: %d\n", resp.status.small_ball_sw);
+	printf("Ball 2 deployed: %d\n", resp.status.large_ball_sw);
 	printf("Meltwire deployed: %d\n", resp.status.MW_sw);
-	printf("Ball 1 fb sw: %d\n", resp.status.ball1_fb);
-	printf("Ball 2 fb sw: %d\n", resp.status.ball2_fb);
+	printf("Ball 1 fb sw: %d\n", resp.status.small_ball_fb);
+	printf("Ball 2 fb sw: %d\n", resp.status.large_ball_fb);
 	printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
 	printf("Cree LED status: %d\n", resp.status.cree_led);
 	printf("LED 505L status: %d\n", resp.status.led_505L);
