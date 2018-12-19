@@ -21,6 +21,7 @@
 
 #define DFL_BALL_TIME_MS (15*1000)
 #define DFL_BLINK_PERIOD_MS 1000
+#define DFL_IR_PERIOD_MS (15*60*1000)
 #define DFL_BLINK_DUR_MS (15*60*1000)
 #define DFL_FB_DUR_MS (10)
 #define WAIT_MS (4 * 1000)
@@ -30,9 +31,16 @@ struct MulticallInfo;
 static int ode_status(int, char**, struct MulticallInfo *);
 static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
+static int ode_led_645L(int, char**, struct MulticallInfo *);
+static int ode_led_851L(int, char**, struct MulticallInfo *);
+static int ode_led_IR(int, char**, struct MulticallInfo *);
 static int ode_test(int, char**, struct MulticallInfo *);
-static int ode_ball1(int, char**, struct MulticallInfo *);
+static int ode_small_ball(int, char**, struct MulticallInfo *);
+static int ode_large_ball(int, char**, struct MulticallInfo *);
+static int ode_door(int, char**, struct MulticallInfo *);
 static int mw_status(int, char**, struct MulticallInfo *);
+static int small_ball_status(int, char**, struct MulticallInfo *);
+static int large_ball_status(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
 // running the executable with the - flags will call that function
@@ -43,41 +51,42 @@ struct MulticallInfo {
    const char *opt;
    const char *help;
 } multicall[] = {
-   { &ode_status, "ode-status", "-S", 
-       "Display the current status of the ode-payload process" }, 
+   { &ode_status, "ode-status", "-S", "Display the current status of the ode-payload process" }, 
    { &ode_cree, "ode-cree", "-L1", "Blink Cree LED" }, 
    { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
-   { &ode_test, "ode-test", "-L2", "Test function building" }, 
-   { &ode_ball1, "ode-ball1", "-B1", "Deploy ball 1" }, 
-   { &mw_status, "ode-mw_status", "-B1", "Check if the door is open." }, 
+   { &ode_led_645L, "ode-led_645L", "-L3", "Blink 645L LED" }, 
+   { &ode_led_851L, "ode-led_851L", "-L4", "Blink 851L LED" }, 
+   { &ode_led_IR, "ode-led_IR", "-L5", "Blink IR LED" }, 
+   { &ode_test, "ode-test", "-L6", "Test function building" }, 
+   { &ode_deploy_small_ball, "ode-deloy_small_ball", "-B1", "Deploy small ball" }, 
+   { &ode_large_ball, "ode-deloy_large_ball", "-B2", "Deploy large ball" }, 
+   { &ode_deploy_door, "ode-deploy_door", "-B3", "Open door" }, 
+   { &small_ball_status, "ode-small_ball_status", "-B1", "Check if the small ball is deployed." }, 
+   { &large_ball_status, "ode-large_ball_status", "-B2", "Check if the large ball is deployed." }, 
+   { &mw_status, "ode-mw_status", "-B3", "Check if the door is open." }, 
   { NULL, NULL, NULL, NULL }
 };
 
-static int ode_ball1(int argc, char **argv, struct MulticallInfo * self) 
+static int ode_status(int argc, char **argv, struct MulticallInfo * self) 
 {
    // struct to hold response from payload process
    struct {
       uint8_t cmd;
-      uint8_t resp;
+      struct ODEStatus status;
    } __attribute__((packed)) resp;
 
    struct {
       uint8_t cmd;
-      struct ODEDeployData param;
    } __attribute__((packed)) send;
 
-   send.cmd = ODE_BURN_BALL1_CMD;
-   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   send.cmd = 1;
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:")) != -1) {
       switch(opt) {
          case 'h':
             ip = optarg;
-            break;
-         case 'd':
-            send.param.duration = htonl(atol(optarg));
             break;
       }
    }
@@ -88,55 +97,29 @@ static int ode_ball1(int argc, char **argv, struct MulticallInfo * self)
       return len;
    }
  
-   if (resp.cmd != ODE_BURN_BALL1_RESP) {
+   if (resp.cmd != CMD_STATUS_RESPONSE) {
       printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, ODE_BURN_BALL1_RESP);
+       resp.cmd, CMD_STATUS_RESPONSE);
       return 5;
    }
 
-   return 0;
-}
-
-static int mw_status(int argc, char **argv, struct MulticallInfo * self) 
-{
-   // struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-      uint8_t resp;
-   } __attribute__((packed)) resp;
-
-   struct {
-      uint8_t cmd;
-      struct ODEFeedBackData param;
-   } __attribute__((packed)) send;
-
-   send.cmd = ODE_MW_STATUS_CMD;
-   send.param.duration = htonl(DFL_FB_DUR_MS);
-   const char *ip = "127.0.0.1";
-   int len, opt;
+   // print out returned status values   
+   // printf("Total Packets Read: %d\n", ntohl(resp.status.totalSerRead));
+   // printf("SW 1: %d\n", resp.status.sw_1);
+   // printf("SW 2: %d\n", resp.status.sw_2);
+   // printf("SW 3: %d\n", resp.status.sw_3);
    
-   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
-      switch(opt) {
-         case 'h':
-            ip = optarg;
-            break;
-         case 'd':
-            send.param.duration = htonl(atol(optarg));
-            break;
-      }
-   }
-   
-   // send packet and wait for response
-   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
-    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
-      return len;
-   }
- 
-   if (resp.cmd != ODE_MW_STATUS_RESP) {
-      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, ODE_MW_STATUS_RESP);
-      return 5;
-   }
+	printf("Ball 1 deployed: %d\n", resp.status.ball1_sw);
+	printf("Ball 2 deployed: %d\n", resp.status.ball2_sw);
+	printf("Meltwire deployed: %d\n", resp.status.MW_sw);
+	printf("Ball 1 fb sw: %d\n", resp.status.ball1_fb);
+	printf("Ball 2 fb sw: %d\n", resp.status.ball2_fb);
+	printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
+	printf("Cree LED status: %d\n", resp.status.cree_led);
+	printf("LED 505L status: %d\n", resp.status.led_505L);
+	printf("LED 645L status: %d\n", resp.status.led_645L);
+	printf("LED 851L status: %d\n", resp.status.led_851L);   
+	printf("LED IR status: %d\n", resp.status.led_IR);   
 
    return 0;
 }
@@ -237,29 +220,35 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
    return 0;
 }
 
-
-static int ode_test(int argc, char **argv, struct MulticallInfo * self) {return 0;}
-
-static int ode_status(int argc, char **argv, struct MulticallInfo * self) 
+static int ode_led_645L(int argc, char **argv, struct MulticallInfo * self) 
 {
    // struct to hold response from payload process
    struct {
       uint8_t cmd;
-      struct ODEStatus status;
+      uint8_t resp;
    } __attribute__((packed)) resp;
 
    struct {
       uint8_t cmd;
+      struct ODEBlinkData param;
    } __attribute__((packed)) send;
 
-   send.cmd = 1;
+   send.cmd = ODE_BLINK_LED_645L_CMD;
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
       switch(opt) {
          case 'h':
             ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+         case 'p':
+            send.param.period = htonl(atol(optarg));
             break;
       }
    }
@@ -270,32 +259,376 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
       return len;
    }
  
-   if (resp.cmd != CMD_STATUS_RESPONSE) {
+   if (resp.cmd != ODE_BLINK_LED_645L_RESP) {
       printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, CMD_STATUS_RESPONSE);
+       resp.cmd, ODE_BLINK_LED_645L_RESP);
       return 5;
    }
 
-   // print out returned status values   
-   // printf("Total Packets Read: %d\n", ntohl(resp.status.totalSerRead));
-   // printf("SW 1: %d\n", resp.status.sw_1);
-   // printf("SW 2: %d\n", resp.status.sw_2);
-   // printf("SW 3: %d\n", resp.status.sw_3);
+   return 0;
+}
+
+static int ode_led_851L(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEBlinkData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_BLINK_LED_851L_CMD;
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
    
-	printf("Ball 1 deployed: %d\n", resp.status.ball1_sw);
-	printf("Ball 2 deployed: %d\n", resp.status.ball2_sw);
-	printf("Meltwire deployed: %d\n", resp.status.MW_sw);
-	printf("Ball 1 fb sw: %d\n", resp.status.ball1_fb);
-	printf("Ball 2 fb sw: %d\n", resp.status.ball2_fb);
-	printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
-	printf("Cree LED status: %d\n", resp.status.cree_led);
-	printf("LED 505L status: %d\n", resp.status.led_505L);
-	printf("LED 645L status: %d\n", resp.status.led_645L);
-	printf("LED 851L status: %d\n", resp.status.led_851L);   
-	printf("LED IR status: %d\n", resp.status.led_IR);   
+   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+         case 'p':
+            send.param.period = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_BLINK_LED_851L_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_BLINK_LED_851L_RESP);
+      return 5;
+   }
 
    return 0;
 }
+
+static int ode_led_IR(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEBlinkData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_BLINK_IR_LED_CMD;
+   send.param.period = htonl(DFL_IR_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+         case 'p':
+            send.param.period = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_BLINK_IR_LED_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_BLINK_IR_LED_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int ode_deploy_small_ball(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEDeployData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_DEPLOY_SMALL_BALL_CMD;
+   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_DEPLOY_SMALL_BALL_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_DEPLOY_SMALL_BALL_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int ode_deploy_large_ball(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEDeployData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_DEPLOY_LARGE_BALL_CMD;
+   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_DEPLOY_LARGE_BALL_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_DEPLOY_LARGE_BALL_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int ode_deploy_door(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEDeployData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_DEPLOY_DOOR_CMD;
+   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_DEPLOY_DOOR_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_DEPLOY_DOOR_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int small_ball_status(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEFeedBackData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_SMALL_BALL_STATUS_CMD;
+   send.param.duration = htonl(DFL_FB_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_SMALL_BALL_STATUS_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_SMALL_BALL_STATUS_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int large_ball_status(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEFeedBackData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_LARGE_BALL_STATUS_CMD;
+   send.param.duration = htonl(DFL_FB_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_LARGE_BALL_STATUS_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_LARGE_BALL_STATUS_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int mw_status(int argc, char **argv, struct MulticallInfo * self) 
+{
+   // struct to hold response from payload process
+   struct {
+      uint8_t cmd;
+      uint8_t resp;
+   } __attribute__((packed)) resp;
+
+   struct {
+      uint8_t cmd;
+      struct ODEFeedBackData param;
+   } __attribute__((packed)) send;
+
+   send.cmd = ODE_MW_STATUS_CMD;
+   send.param.duration = htonl(DFL_FB_DUR_MS);
+   const char *ip = "127.0.0.1";
+   int len, opt;
+   
+   while ((opt = getopt(argc, argv, "h:d:")) != -1) {
+      switch(opt) {
+         case 'h':
+            ip = optarg;
+            break;
+         case 'd':
+            send.param.duration = htonl(atol(optarg));
+            break;
+      }
+   }
+   
+   // send packet and wait for response
+   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
+    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
+      return len;
+   }
+ 
+   if (resp.cmd != ODE_MW_STATUS_RESP) {
+      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
+       resp.cmd, ODE_MW_STATUS_RESP);
+      return 5;
+   }
+
+   return 0;
+}
+
+static int ode_test(int argc, char **argv, struct MulticallInfo * self) {return 0;}
 
 // prints out available commands for this util
 static int print_usage(const char *name)
