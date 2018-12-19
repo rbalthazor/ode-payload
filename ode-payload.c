@@ -216,7 +216,7 @@ static int stop_led_505L(void *arg)
       state->led_505L_blink_evt = NULL;
    }
   
-   codes_for_status[7]=1;
+   codes_for_status[7]=0;
 
    // Do not reschedule this event
    state->led_505L_finish_evt = NULL;
@@ -237,7 +237,7 @@ static int stop_led_645L(void *arg)
       state->led_645L_blink_evt = NULL;
    }
   
-   codes_for_status[8]=1;
+   codes_for_status[8]=0;
 
    // Do not reschedule this event
    state->led_645L_finish_evt = NULL;
@@ -258,7 +258,7 @@ static int stop_led_851L(void *arg)
       state->led_851L_blink_evt = NULL;
    }
   
-   codes_for_status[9]=1;
+   codes_for_status[9]=0;
 
    // Do not reschedule this event
    state->led_851L_finish_evt = NULL;
@@ -279,7 +279,7 @@ static int stop_led_IR(void *arg)
       state->led_IR_blink_evt = NULL;
    }
   
-   codes_for_status[10]=1;
+   codes_for_status[10]=0;
 
    // Do not reschedule this event
    state->led_IR_finish_evt = NULL;
