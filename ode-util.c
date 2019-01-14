@@ -269,6 +269,7 @@ static int ode_cree(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_CREE_CMD;
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
    send.param.period = htonl(DFL_BLINK_PERIOD_MS);
    send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
@@ -317,6 +318,7 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_505L_CMD;
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
    send.param.period = htonl(DFL_BLINK_PERIOD_MS);
    send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
@@ -365,6 +367,7 @@ static int ode_led_645L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_645L_CMD;
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
    send.param.period = htonl(DFL_BLINK_PERIOD_MS);
    send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
@@ -413,6 +416,7 @@ static int ode_led_851L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_851L_CMD;
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
    send.param.period = htonl(DFL_BLINK_PERIOD_MS);
    send.param.duration = htonl(DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
