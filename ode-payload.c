@@ -11,6 +11,12 @@
 
 struct ODEPayloadState {
 	ProcessData *proc;
+	
+	struct GPIOSensor *enable_5V;
+	int enable_5V_active;
+	void *enable_5V_evt;
+	void *enable_5V_evt;
+	
 	struct GPIOSensor *cree;
 	int cree_active;
 	void *cree_blink_evt;
@@ -63,7 +69,7 @@ struct ODEPayloadState {
 
 static struct ODEPayloadState *state = NULL;
 //static struct ODEStatus *sc_status = NULL;
-static char codes_for_status[11]={0};
+static char codes_for_status[12]={0};
 
 // Function called when a status command is sent
 void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
@@ -82,6 +88,7 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 	status.led_645L=codes_for_status[8];
 	status.led_851L=codes_for_status[9];
 	status.led_IR=codes_for_status[10];
+	status.enable_5V=codes_for_status[11];
 
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
@@ -90,6 +97,22 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 
 //__________________________________________________________________
 //Blink LED call back functions
+static int enable_5V(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn on the 5V regualtor
+   state->enable_5V_active = 1;
+
+   // Change the GPIO
+   if (state->enable_5V && state->enable_5V->set)
+      state->enable_5V->set(state->enable_5V, state->enable_5V_active);
+  
+   codes_for_status[11]=1;
+	 
+   // Reschedule the event
+   return EVENT_KEEP;
+}
 
 static int blink_cree_cb(void *arg)
 {
@@ -179,6 +202,22 @@ static int blink_led_IR_cb(void *arg)
 
 //__________________________________________________________________
 //Stop LED call back functions
+static int disable_5V(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off the 5V regualtor
+   state->enable_5V_active = 0;
+
+   // Change the GPIO
+   if (state->enable_5V && state->enable_5V->set)
+      state->enable_5V->set(state->enable_5V, state->enable_5V_active);
+  
+   codes_for_status[11]=0;
+	 
+   // Reschedule the event
+   return EVENT_KEEP;
+}
 
 static int stop_cree(void *arg)
 {
@@ -216,6 +255,7 @@ static int stop_led_505L(void *arg)
       state->led_505L_blink_evt = NULL;
    }
   
+   disable_5V;
    codes_for_status[7]=0;
 
    // Do not reschedule this event
@@ -237,6 +277,7 @@ static int stop_led_645L(void *arg)
       state->led_645L_blink_evt = NULL;
    }
   
+   disable_5V;
    codes_for_status[8]=0;
 
    // Do not reschedule this event
@@ -258,6 +299,7 @@ static int stop_led_851L(void *arg)
       state->led_851L_blink_evt = NULL;
    }
   
+   disable_5V;  
    codes_for_status[9]=0;
 
    // Do not reschedule this event
@@ -349,6 +391,9 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
 
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
+	
+      enable_5V;   
+	   
       // Turn the LED on
       state->led_505L_active = 1;
       if (state->led_505L && state->led_505L->set)
@@ -388,6 +433,9 @@ void blink_led_645L(int socket, unsigned char cmd, void * data, size_t dataLen,
 
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
+	
+      enable_5V;   
+	   
       // Turn the LED on
       state->led_645L_active = 1;
       if (state->led_645L && state->led_645L->set)
@@ -427,6 +475,9 @@ void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
 
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
+	
+      enable_5V;   
+	   
       // Turn the LED on
       state->led_851L_active = 1;
       if (state->led_851L && state->led_851L->set)
