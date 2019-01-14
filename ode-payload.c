@@ -9,7 +9,7 @@
 #include <string.h>
 #include "ode-cmds.h"
 
-uint32_t LED_forward_period = 0
+uint32_t LED_forward_period = 0;
 
 struct ODEPayloadState {
 	ProcessData *proc;
