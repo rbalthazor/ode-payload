@@ -255,7 +255,7 @@ static int stop_led_505L(void *arg)
       state->led_505L_blink_evt = NULL;
    }
   
-   &disable_5V;
+   disable_5V(0);
    codes_for_status[7]=0;
 
    // Do not reschedule this event
