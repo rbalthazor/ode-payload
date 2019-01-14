@@ -334,10 +334,6 @@ int delay_blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEBlinkData *params = (struct ODEBlinkData*)data;
-   uint8_t resp = 0;
-
-   if (dataLen != sizeof(*params))
-      return;
 
    // Clean up from previous events, if any
    if (state->cree_finish_evt) {
@@ -363,8 +359,8 @@ int delay_blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
             EVT_ms2tv(ntohl(params->period)), &delay_blink_cree, state);	   
 
       // Create the event to stop blinking
-      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
+//      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+//            EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
    }
 	
   // Do not reschedule this event
@@ -403,11 +399,11 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
 //      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 //            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   
      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->period)), &delay_blink_cree, state);	   
+            EVT_ms2tv(ntohl(params->delay)), &delay_blink_cree, state);	   
 
       // Create the event to stop blinking
-//      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
-//            EVT_ms2tv(ntohl(params->duration+params->delay)), &stop_cree, state);
+      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->duration+params->delay)), &stop_cree, state);
    }
 
    PROC_cmd_sockaddr(state->proc, ODE_BLINK_CREE_RESP, &resp,
