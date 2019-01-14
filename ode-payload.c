@@ -330,10 +330,8 @@ static int stop_led_IR(void *arg)
 
 //__________________________________________________________________
 //Delay Blink LED functions
-int delay_blink_cree(uint32_t period;)
+int delay_blink_cree(uint32_t period)
 {
-   struct ODEBlinkData *params = (struct ODEBlinkData*)data;
-
    // Clean up from previous events, if any
    if (state->cree_finish_evt) {
       EVT_sched_remove(PROC_evt(state->proc), state->cree_finish_evt);
