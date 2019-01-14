@@ -833,6 +833,7 @@ int main(int argc, char *argv[])
    DBG_setLevel(DBG_LEVEL_ALL);
 
    // Initialize GPIOs
+   state->enable_5V = create_named_gpio_device("ENABLE_5V");
    state->cree = create_named_gpio_device("CREE");
    state->led_505L = create_named_gpio_device("LED_505L");
    state->led_645L = create_named_gpio_device("LED_645L");
@@ -853,6 +854,41 @@ int main(int argc, char *argv[])
 
    // Clean up, whenever we exit event loop
    DBG_print(DBG_LEVEL_INFO, "Cleaning up\n");
+	
+   // Clean up the input pins
+   if (state->small_ball_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->small_ball_evt);
+  
+   if (state->deploy_small_ball) {
+      // Turn off the ball1 GPIO if able
+      if (state->deploy_small_ball->set)
+         state->deploy_small_ball->set(state->deploy_small_ball, 0);
+      // Delete the ball1 GPIO sensor
+      state->deploy_small_ball->sensor.close((struct Sensor **)&state->deploy_small_ball);
+   }   	
+
+   // Clean up the deployment events
+   if (state->Small_Ball_Feedback_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->Small_Ball_Feedback_evt;);
+  
+   if (state->Small_Ball_Feedback) {
+      // Turn off the ball1 GPIO if able
+      if (state->Small_Ball_Feedback->set)
+         state->Small_Ball_Feedback->set(state->Small_Ball_Feedback, 0);
+      // Delete the ball1 GPIO sensor
+      state->Small_Ball_Feedback->sensor.close((struct Sensor **)&state->Small_Ball_Feedback);
+   }   
+   
+   if (state->Door_Feedback_evt)
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt;);
+  
+   if (state->Door_Feedback) {
+      // Turn off the ball1 GPIO if able
+      if (state->Door_Feedback->set)
+         state->Door_Feedback->set(state->Door_Feedback, 0);
+      // Delete the ball1 GPIO sensor
+      state->Door_Feedback->sensor.close((struct Sensor **)&state->Door_Feedback);
+   } 	
 
    // Clean up the deployment events
    if (state->small_ball_evt)
@@ -889,6 +925,15 @@ int main(int argc, char *argv[])
    } 
 
    // Clean up the LED events
+   if (state->enable_5V) {
+      // Turn off the cree GPIO if able
+      if (state->enable_5V->set)
+         state->enable_5V->set(state->enable_5V, 0);
+	 codes_for_status[11]=0;
+      // Delete the cree GPIO sensor
+      state->enable_5V->sensor.close((struct Sensor **)&state->enable_5V);
+   }	
+	
    if (state->cree) {
       // Turn off the cree GPIO if able
       if (state->cree->set)
