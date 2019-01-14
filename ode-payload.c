@@ -255,7 +255,7 @@ static int stop_led_505L(void *arg)
       state->led_505L_blink_evt = NULL;
    }
   
-   disable_5V();
+   &disable_5V;
    codes_for_status[7]=0;
 
    // Do not reschedule this event
@@ -396,7 +396,7 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
 	
-      enable_5V();   
+      &enable_5V();   
 	   
       // Turn the LED on
       state->led_505L_active = 1;
