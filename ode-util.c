@@ -26,6 +26,7 @@
 #define DFL_BLINK_DUR_MS (15*60*1000)		// 15 minutes
 #define DFL_FB_DUR_MS (10)  			// 10 ms
 #define WAIT_MS (4 * 1000)  			// 4 seconds
+#define DFL_BLINK_DELAY_MS (0*1000)		// 0 seconds
 
 struct MulticallInfo;
 
