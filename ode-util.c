@@ -136,11 +136,6 @@ static int set_blink_delay(int argc, char **argv, struct MulticallInfo * self)
 // struct to hold response from payload process
    struct {
       uint8_t cmd;
-      struct ODEStatus status;
-   } __attribute__((packed)) resp;
-
-   struct {
-      uint8_t cmd;
    } __attribute__((packed)) send;
 
    send.cmd = 1;
