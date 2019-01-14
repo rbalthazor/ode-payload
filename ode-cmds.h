@@ -49,6 +49,7 @@ struct ODEStatus {
    uint8_t led_645L; //8
    uint8_t led_851L; 
    uint8_t led_IR;   //10
+   uint8_t enable_5V;   //10
 } __attribute__((packed));
 
 struct ODEBlinkData {
