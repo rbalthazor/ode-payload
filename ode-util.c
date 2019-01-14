@@ -44,9 +44,9 @@ static int mw_status(int, char**, struct MulticallInfo *);
 static int small_ball_status(int, char**, struct MulticallInfo *);
 static int large_ball_status(int, char**, struct MulticallInfo *);
 static int large_ball_status(int, char**, struct MulticallInfo *);
-static int set_led_blink_delay(int, char**, struct MulticallInfo *);
-static int set_led_blink_duration(int, char**, struct MulticallInfo *);
-static int set_led_blink_period(int, char**, struct MulticallInfo *);
+static int set_blink_delay(int, char**, struct MulticallInfo *);
+static int set_blink_duration(int, char**, struct MulticallInfo *);
+static int set_blink_period(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
 // running the executable with the - flags will call that function
