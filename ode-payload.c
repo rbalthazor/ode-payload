@@ -330,8 +330,7 @@ static int stop_led_IR(void *arg)
 
 //__________________________________________________________________
 //Delay Blink LED functions
-int delay_blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
-                     struct sockaddr_in * src)
+int delay_blink_cree(uint32_t period;)
 {
    struct ODEBlinkData *params = (struct ODEBlinkData*)data;
 
@@ -344,24 +343,14 @@ int delay_blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
       EVT_sched_remove(PROC_evt(state->proc), state->cree_blink_evt);
       state->cree_blink_evt = NULL;
    }
+ 
+   state->cree_active = 1;
+   if (state->cree && state->cree->set)
+      state->cree->set(state->cree, state->cree_active);
 
-   // Only drive the LED if the period and duration are > 0
-   if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
-      // Turn the LED on
-      state->cree_active = 1;
-      if (state->cree && state->cree->set)
-         state->cree->set(state->cree, state->cree_active);
-
-      // Create the blink event
-      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   
-     state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->period)), &delay_blink_cree, state);	   
-
-      // Create the event to stop blinking
-//      state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
-//            EVT_ms2tv(ntohl(params->duration)), &stop_cree, state);
-   }
+   // Create the blink event
+   state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   	   
 	
   // Do not reschedule this event
    return EVENT_REMOVE;
@@ -399,7 +388,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
 //      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 //            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   
      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->delay)), &delay_blink_cree, state);	   
+            EVT_ms2tv(ntohl(params->delay)), &delay_blink_cree(params->period), state);	   
 
       // Create the event to stop blinking
       state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
