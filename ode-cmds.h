@@ -65,6 +65,7 @@ struct ODEBlinkData {
    uint32_t period;
    uint32_t fb_led_period;
    int32_t duration;
+   int32_t delay;
 } __attribute__((packed));
 
 struct ODEDeployData {
