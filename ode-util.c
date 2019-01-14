@@ -19,12 +19,13 @@
 #include <ctype.h>
 #include "ode-cmds.h"
 
-#define DFL_BALL_TIME_MS (15*1000)
-#define DFL_BLINK_PERIOD_MS 1000
-#define DFL_IR_PERIOD_MS (15*60*1000)
-#define DFL_BLINK_DUR_MS (15*60*1000)
-#define DFL_FB_DUR_MS (10)
-#define WAIT_MS (4 * 1000)
+#define DFL_BALL_TIME_MS (5*1000)  		// 5 seconds
+#define DFL_DOOR_TIME_MS (10*1000)  		// 15 seconds
+#define DFL_BLINK_PERIOD_MS 1000		// 1 second
+#define DFL_IR_PERIOD_MS (15*60*1000)		// 15 minutes
+#define DFL_BLINK_DUR_MS (15*60*1000)		// 15 minutes
+#define DFL_FB_DUR_MS (10)  			// 10 ms
+#define WAIT_MS (4 * 1000)  			// 4 seconds
 
 struct MulticallInfo;
 
@@ -466,7 +467,7 @@ static int ode_deploy_door(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_DEPLOY_DOOR_CMD;
-   send.param.duration = htonl(DFL_BALL_TIME_MS);
+   send.param.duration = htonl(DFL_DOOR_TIME_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
