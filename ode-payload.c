@@ -277,7 +277,7 @@ static int stop_led_645L(void *arg)
       state->led_645L_blink_evt = NULL;
    }
   
-   disable_5V();
+   disable_5V(0);
    codes_for_status[8]=0;
 
    // Do not reschedule this event
@@ -299,7 +299,7 @@ static int stop_led_851L(void *arg)
       state->led_851L_blink_evt = NULL;
    }
   
-   disable_5V();  
+   disable_5V(0);  
    codes_for_status[9]=0;
 
    // Do not reschedule this event
@@ -362,7 +362,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
 //            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);
       state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
-	    &(state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+	    (state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 	    EVT_ms2tv(ntohl(params->period)),&blink_cree_cb, state)), state);	   
 
       // Create the event to stop blinking
@@ -396,7 +396,7 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
 	
-      &enable_5V();   
+      enable_5V(0);   
 	   
       // Turn the LED on
       state->led_505L_active = 1;
@@ -408,7 +408,7 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
 //            EVT_ms2tv(ntohl(params->period)), &blink_led_505L_cb, state);
      state->led_505L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
-	    &(state->led_505L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+	    (state->led_505L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 	    EVT_ms2tv(ntohl(params->period)),&blink_led_505L_cb, state)), state);	   
 					   
       // Create the event to stop blinking
@@ -442,7 +442,7 @@ void blink_led_645L(int socket, unsigned char cmd, void * data, size_t dataLen,
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
 	
-      enable_5V();   
+      enable_5V(0);   
 	   
       // Turn the LED on
       state->led_645L_active = 1;
@@ -454,7 +454,7 @@ void blink_led_645L(int socket, unsigned char cmd, void * data, size_t dataLen,
 //            EVT_ms2tv(ntohl(params->period)), &blink_led_645L_cb, state);
      state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
-	    &(state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+	    (state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 	    EVT_ms2tv(ntohl(params->period)),&blink_led_645L_cb, state)), state);
 					       
       // Create the event to stop blinking
@@ -488,7 +488,7 @@ void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
    // Only drive the LED if the period and duration are > 0
    if (ntohl(params->period) > 0 && ntohl(params->duration) > 0) {
 	
-      enable_5V();   
+      enable_5V(0);   
 	   
       // Turn the LED on
       state->led_851L_active = 1;
@@ -500,7 +500,7 @@ void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
 //            EVT_ms2tv(ntohl(params->period)), &blink_led_851L_cb, state);
      state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
-	    &(state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+	    (state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 	    EVT_ms2tv(ntohl(params->period)),&blink_led_851L_cb, state)), state);
 					       
       // Create the event to stop blinking
@@ -883,9 +883,8 @@ int main(int argc, char *argv[])
       state->deploy_small_ball->sensor.close((struct Sensor **)&state->deploy_small_ball);
    }   	
 
-   // Clean up the deployment events
    if (state->Small_Ball_Feedback_evt)
-      EVT_sched_remove(PROC_evt(state->proc), state->Small_Ball_Feedback_evt;);
+      EVT_sched_remove(PROC_evt(state->proc), state->Small_Ball_Feedback_evt);
   
    if (state->Small_Ball_Feedback) {
       // Turn off the ball1 GPIO if able
@@ -896,7 +895,7 @@ int main(int argc, char *argv[])
    }   
    
    if (state->Door_Feedback_evt)
-      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt;);
+      EVT_sched_remove(PROC_evt(state->proc), state->Door_Feedback_evt);
   
    if (state->Door_Feedback) {
       // Turn off the ball1 GPIO if able
