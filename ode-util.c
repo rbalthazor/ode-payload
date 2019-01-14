@@ -58,12 +58,12 @@ struct MulticallInfo {
    { &ode_led_851L, "ode-led_851L", "-L4", "Blink 851L LED" }, 
    { &ode_led_IR, "ode-led_IR", "-L5", "Blink IR LED" }, 
    { &ode_test, "ode-test", "-L6", "Test function building" }, 
-   { &ode_deploy_small_ball, "ode-deloy_small_ball", "-B1", "Deploy small ball" }, 
+   { &ode_deploy_small_ball, "ode-deploy_small_ball", "-B1", "Deploy small ball" }, 
    { &ode_deploy_large_ball, "ode-deploy_large_ball", "-B2", "Deploy large ball" }, 
    { &ode_deploy_door, "ode-deploy_door", "-B3", "Open door" }, 
-   { &small_ball_status, "ode-small_ball_status", "-B1", "Check if the small ball is deployed." }, 
-   { &large_ball_status, "ode-large_ball_status", "-B2", "Check if the large ball is deployed." }, 
-   { &mw_status, "ode-mw_status", "-B3", "Check if the door is open." }, 
+   { &small_ball_status, "ode-small_ball_status", "-FB1", "Check if the small ball is deployed." }, 
+   { &large_ball_status, "ode-large_ball_status", "-FB2", "Check if the large ball is deployed." }, 
+   { &mw_status, "ode-mw_status", "-FB3", "Check if the door is open." }, 
   { NULL, NULL, NULL, NULL }
 };
 
