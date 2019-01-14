@@ -37,6 +37,15 @@
 #define ODE_MW_STATUS_CMD 12
 #define ODE_MW_STATUS_RESP (ODE_MW_STATUS_CMD | 0x80)
 
+#define ODE_MW_STATUS_CMD 13
+#define ODE_MW_STATUS_RESP (ODE_MW_STATUS_CMD | 0x80)
+
+#define ODE_MW_STATUS_CMD 14
+#define ODE_MW_STATUS_RESP (ODE_MW_STATUS_CMD | 0x80)
+
+#define ODE_MW_STATUS_CMD 15
+#define ODE_MW_STATUS_RESP (ODE_MW_STATUS_CMD | 0x80)
+
 struct ODEStatus {
    uint8_t small_ball_sw; //0
    uint8_t large_ball_sw; 
