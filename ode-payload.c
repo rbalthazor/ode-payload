@@ -363,7 +363,7 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
       state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
 	    &(state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-	    EVT_ms2tv(ntohl(params->period)),&blink_cree_cb, state), state);	   
+	    EVT_ms2tv(ntohl(params->period)),&blink_cree_cb, state)), state);	   
 
       // Create the event to stop blinking
       state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
@@ -409,7 +409,7 @@ void blink_led_505L(int socket, unsigned char cmd, void * data, size_t dataLen,
      state->led_505L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
 	    &(state->led_505L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-	    EVT_ms2tv(ntohl(params->period)),&blink_led_505L_cb, state), state);	   
+	    EVT_ms2tv(ntohl(params->period)),&blink_led_505L_cb, state)), state);	   
 					   
       // Create the event to stop blinking
       state->led_505L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
@@ -455,7 +455,7 @@ void blink_led_645L(int socket, unsigned char cmd, void * data, size_t dataLen,
      state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
 	    &(state->led_645L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-	    EVT_ms2tv(ntohl(params->period)),&blink_led_645L_cb, state), state);
+	    EVT_ms2tv(ntohl(params->period)),&blink_led_645L_cb, state)), state);
 					       
       // Create the event to stop blinking
       state->led_645L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
@@ -501,7 +501,7 @@ void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
      state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
             EVT_ms2tv(ntohl(params->delay)),
 	    &(state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-	    EVT_ms2tv(ntohl(params->period)),&blink_led_851L_cb, state), state);
+	    EVT_ms2tv(ntohl(params->period)),&blink_led_851L_cb, state)), state);
 					       
       // Create the event to stop blinking
       state->led_851L_finish_evt = EVT_sched_add(PROC_evt(state->proc),
