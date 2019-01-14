@@ -169,7 +169,7 @@ static int set_blink_delay(int argc, char **argv, struct MulticallInfo * self)
       return 5;
    }   
 
-   DFL_BLINK_DELAY_MS  = DFL_BLINK_DELAY_MS;
+   DFL_BLINK_DELAY_MS  = (5*1000);
    printf("LED blink delay set to: %d\n", DFL_BLINK_DELAY_MS);	
 	
    return 0;
@@ -211,7 +211,7 @@ static int set_blink_duration(int argc, char **argv, struct MulticallInfo * self
       return 5;
    }   
 
-   DFL_BLINK_PERIOD_MS  = DFL_BLINK_PERIOD_MS;
+   DFL_BLINK_PERIOD_MS  = (1*1000);
    printf("LED blink period set to: %d\n", DFL_BLINK_PERIOD_MS);	
 	
    return 0;
@@ -253,7 +253,7 @@ static int set_blink_period(int argc, char **argv, struct MulticallInfo * self)
       return 5;
    }   
 
-   DFL_BLINK_DUR_MS  = DFL_BLINK_DUR_MS;
+   DFL_BLINK_DUR_MS  = (15*60*1000);
    printf("LED blink duration set to: %d\n", DFL_BLINK_DUR_MS);	
 	
    return 0;
