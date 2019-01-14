@@ -215,7 +215,7 @@ static int set_blink_duration(int argc, char **argv, struct MulticallInfo * self
    return 0;
 }
 
-static int et_blink_period(int argc, char **argv, struct MulticallInfo * self) 
+static int set_blink_period(int argc, char **argv, struct MulticallInfo * self) 
 {
 // struct to hold response from payload process
    struct {
