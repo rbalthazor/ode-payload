@@ -9,6 +9,8 @@
 #include <string.h>
 #include "ode-cmds.h"
 
+uint32_t LED_forward_period = 0
+
 struct ODEPayloadState {
 	ProcessData *proc;
 	
@@ -330,7 +332,7 @@ static int stop_led_IR(void *arg)
 
 //__________________________________________________________________
 //Delay Blink LED functions
-int delay_blink_cree(uint32_t period)
+int delay_blink_cree(void *arg)
 {
    // Clean up from previous events, if any
    if (state->cree_finish_evt) {
@@ -348,7 +350,7 @@ int delay_blink_cree(uint32_t period)
 
    // Create the blink event
    state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   	   
+      EVT_ms2tv(ntohl(LED_forward_period)), &blink_cree_cb, state);	   	   
 	
   // Do not reschedule this event
    return EVENT_REMOVE;
@@ -385,8 +387,9 @@ void blink_cree(int socket, unsigned char cmd, void * data, size_t dataLen,
       // Create the blink event
 //      state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
 //            EVT_ms2tv(ntohl(params->period)), &blink_cree_cb, state);	   
-     state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->delay)), &delay_blink_cree(params->period), state);	   
+     LED_forward_period = params->period;
+	     state->cree_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->delay)), &delay_blink_cree, state);	   
 
       // Create the event to stop blinking
       state->cree_finish_evt = EVT_sched_add(PROC_evt(state->proc),
