@@ -24,7 +24,7 @@
 #define DFL_IR_PERIOD_MS (15*60*1000)		// 15 minutes
 #define DFL_FB_DUR_MS (10)  			// 10 ms
 #define WAIT_MS (4 * 1000)  			// 4 seconds
-#define DFL_BLINK_DELAY_MS (5*1000)		// 5 seconds
+#define DFL_BLINK_DELAY_MS (0)			// 0 seconds
 #define DFL_BLINK_PERIOD_MS 1000		// 1 second
 #define DFL_BLINK_DUR_MS (15*60*1000)		// 15 minutes
 
