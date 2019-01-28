@@ -59,6 +59,10 @@ struct ODEStatus {
    uint8_t led_851L; 
    uint8_t led_IR;   //10
    uint8_t enable_5V;   //10
+   uint32_t small_ball_fb_time;
+   uint32_t large_ball_fb_time; //4
+   uint32_t MW_fb_time;
+   uint32_t curr_time;
 } __attribute__((packed));
 
 struct ODEBlinkData {

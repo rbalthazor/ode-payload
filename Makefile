@@ -26,16 +26,9 @@ install: $(EXECUTABLE) $(CMDS)
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_505L
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_645L 
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_851L
-	ln -sf ode-util $(INSTALL_DEST)/ode-led_IR
 	ln -sf ode-util $(INSTALL_DEST)/ode-delpoy_small_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_large_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_door
-	ln -sf ode-util $(INSTALL_DEST)/ode-mw_status
-	ln -sf ode-util $(INSTALL_DEST)/ode-small_ball_status
-	ln -sf ode-util $(INSTALL_DEST)/ode-large_ball_status
-	ln -sf ode-util $(INSTALL_DEST)/ode-set_LED_blink_delay
-	ln -sf ode-util $(INSTALL_DEST)/ode-set_LED_blink_duration
-	ln -sf ode-util $(INSTALL_DEST)/ode-set_LED_blink_period
 	$(STRIP) $(INSTALL_DEST)/$(EXECUTABLE)
 	cp $(CMD_FILE) $(ETC_PATH)
 

@@ -24,13 +24,9 @@
 #define DFL_IR_PERIOD_MS (15*60*1000)		// 15 minutes
 #define DFL_FB_DUR_MS (10)  			// 10 ms
 #define WAIT_MS (4 * 1000)  			// 4 seconds
-//#define DFL_BLINK_DELAY_MS (5*1000)		// 5 seconds
-//#define DFL_BLINK_PERIOD_MS 1000		// 1 second
-//#define DFL_BLINK_DUR_MS (15*60*1000)		// 15 minutes
-
-uint32_t DFL_BLINK_DELAY_MS =  (5*1000);		// 5 seconds
-uint32_t DFL_BLINK_PERIOD_MS = 1000;		// 1 second
-uint32_t DFL_BLINK_DUR_MS = (15*60*1000);		// 15 minutes
+#define DFL_BLINK_DELAY_MS (5*1000)		// 5 seconds
+#define DFL_BLINK_PERIOD_MS 1000		// 1 second
+#define DFL_BLINK_DUR_MS (15*60*1000)		// 15 minutes
 
 struct MulticallInfo;
 
@@ -39,18 +35,9 @@ static int ode_cree(int, char**, struct MulticallInfo *);
 static int ode_led_505L(int, char**, struct MulticallInfo *);
 static int ode_led_645L(int, char**, struct MulticallInfo *);
 static int ode_led_851L(int, char**, struct MulticallInfo *);
-static int ode_led_IR(int, char**, struct MulticallInfo *);
-static int ode_test(int, char**, struct MulticallInfo *);
 static int ode_deploy_small_ball(int, char**, struct MulticallInfo *);
 static int ode_deploy_large_ball(int, char**, struct MulticallInfo *);
 static int ode_deploy_door(int, char**, struct MulticallInfo *);
-static int mw_status(int, char**, struct MulticallInfo *);
-static int small_ball_status(int, char**, struct MulticallInfo *);
-static int large_ball_status(int, char**, struct MulticallInfo *);
-static int large_ball_status(int, char**, struct MulticallInfo *);
-static int set_blink_delay(int, char**, struct MulticallInfo *);
-static int set_blink_duration(int, char**, struct MulticallInfo *);
-static int set_blink_period(int, char**, struct MulticallInfo *);
 
 // struct holding all possible function calls
 // running the executable with the - flags will call that function
@@ -66,17 +53,9 @@ struct MulticallInfo {
    { &ode_led_505L, "ode-led_505L", "-L2", "Blink 505L LED" }, 
    { &ode_led_645L, "ode-led_645L", "-L3", "Blink 645L LED" }, 
    { &ode_led_851L, "ode-led_851L", "-L4", "Blink 851L LED" }, 
-   { &ode_led_IR, "ode-led_IR", "-L5", "Blink IR LED" }, 
-   { &ode_test, "ode-test", "-L6", "Test function building" }, 
    { &ode_deploy_small_ball, "ode-deploy_small_ball", "-B1", "Deploy small ball" }, 
    { &ode_deploy_large_ball, "ode-deploy_large_ball", "-B2", "Deploy large ball" }, 
    { &ode_deploy_door, "ode-deploy_door", "-B3", "Open door" }, 
-   { &small_ball_status, "ode-small_ball_status", "-FB1", "Check if the small ball is deployed." }, 
-   { &large_ball_status, "ode-large_ball_status", "-FB2", "Check if the large ball is deployed." }, 
-   { &mw_status, "ode-mw_status", "-FB3", "Check if the door is open." }, 
-   { &set_blink_delay, "ode-set_LED_blink_delay", "-SV1", "Set time, in seconds, to wait until led blinking starts." }, 
-   { &set_blink_duration, "ode-set_LED_blink_duration", "-SV2", "Set the blink duration in seconds." }, 
-   { &set_blink_period, "ode-set_LED_blink_period", "-SV3", "Set the time, in seconds, for the led to be on and off." }, 
   { NULL, NULL, NULL, NULL }
 };
 
@@ -118,12 +97,16 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
       return 5;
    }   
    
+   printf("Spacecraft time: %u\n", ntohl(resp.status.curr_time));
    printf("Small Ball deployment enabled: %d\n", resp.status.small_ball_sw);
    printf("Large Ball deployment enabled: %d\n", resp.status.large_ball_sw);
    printf("Meltwire deployment enabled: %d\n", resp.status.MW_sw);
    printf("Ball 1 fb sw: %d\n", resp.status.small_ball_fb);
+   printf("Small Ball deployment time: %u\n", ntohl(resp.status.small_ball_fb_time));
    printf("Ball 2 fb sw: %d\n", resp.status.large_ball_fb);
+   printf("Large Ball deployment time: %u\n", ntohl(resp.status.large_ball_fb_time));
    printf("Meltwire fb sw: %d\n", resp.status.MW_fb);
+   printf("MW deployment time: %u\n", ntohl(resp.status.MW_fb_time));
    printf("Cree LED status: %d\n", resp.status.cree_led);
    printf("LED 505L status: %d\n", resp.status.led_505L);
    printf("LED 645L status: %d\n", resp.status.led_645L);
@@ -131,135 +114,6 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
    printf("LED IR status: %d\n", resp.status.led_IR);   
    printf("5V regulator status: %d\n", resp.status.enable_5V);   
 
-   return 0;
-}
-
-//Set Values
-//_____________________________________________________________________________________
-static int set_blink_delay(int argc, char **argv, struct MulticallInfo * self) 
-{
- // struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-      struct ODEStatus status;
-   } __attribute__((packed)) resp;
-	
-   // struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-   } __attribute__((packed)) send;
-
-   send.cmd = 1;
-   const char *ip = "127.0.0.1";
-   int len, opt;
-   
-   while ((opt = getopt(argc, argv, "h:")) != -1) {
-      switch(opt) {
-         case 'h':
-            ip = optarg;
-            break;
-      }
-   }
-   
-   // send packet and wait for response
-   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
-    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
-      return len;
-   }
- 
-   if (resp.cmd != CMD_STATUS_RESPONSE) {
-      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, CMD_STATUS_RESPONSE);
-      return 5;
-   }   
-
-   DFL_BLINK_DELAY_MS  = (5*1000);
-   printf("LED blink delay set to: %d\n", DFL_BLINK_DELAY_MS);	
-	
-   return 0;
-}
-
-static int set_blink_duration(int argc, char **argv, struct MulticallInfo * self) 
-{
-   // struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-      struct ODEStatus status;
-   } __attribute__((packed)) resp;
-
-   struct {
-      uint8_t cmd;
-   } __attribute__((packed)) send;
-
-   send.cmd = 1;
-   const char *ip = "127.0.0.1";
-   int len, opt;
-   
-   while ((opt = getopt(argc, argv, "h:")) != -1) {
-      switch(opt) {
-         case 'h':
-            ip = optarg;
-            break;
-      }
-   }
-   
-   // send packet and wait for response
-   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
-    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
-      return len;
-   }
- 
-   if (resp.cmd != CMD_STATUS_RESPONSE) {
-      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, CMD_STATUS_RESPONSE);
-      return 5;
-   }   
-
-   DFL_BLINK_PERIOD_MS  = (1*1000);
-   printf("LED blink period set to: %d\n", DFL_BLINK_PERIOD_MS);	
-	
-   return 0;
-}
-
-static int set_blink_period(int argc, char **argv, struct MulticallInfo * self) 
-{
-// struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-      struct ODEStatus status;
-   } __attribute__((packed)) resp;
-
-   struct {
-      uint8_t cmd;
-   } __attribute__((packed)) send;
-
-   send.cmd = 1;
-   const char *ip = "127.0.0.1";
-   int len, opt;
-   
-   while ((opt = getopt(argc, argv, "h:")) != -1) {
-      switch(opt) {
-         case 'h':
-            ip = optarg;
-            break;
-      }
-   }
-   
-   // send packet and wait for response
-   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
-    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
-      return len;
-   }
- 
-   if (resp.cmd != CMD_STATUS_RESPONSE) {
-      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, CMD_STATUS_RESPONSE);
-      return 5;
-   }   
-
-   DFL_BLINK_DUR_MS  = (15*60*1000);
-   printf("LED blink duration set to: %d\n", DFL_BLINK_DUR_MS);	
-	
    return 0;
 }
 
@@ -279,24 +133,23 @@ static int ode_cree(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_CREE_CMD;
-//   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
-//   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
-//   send.param.duration = htonl(DFL_BLINK_DUR_MS);
-	
-   send.param.delay = (DFL_BLINK_DELAY_MS);
-   send.param.period = (DFL_BLINK_PERIOD_MS);
-   send.param.duration = (DFL_BLINK_DUR_MS);
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
 	
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:d:p:D:")) != -1) {
       switch(opt) {
          case 'h':
             ip = optarg;
             break;
          case 'd':
             send.param.duration = htonl(atol(optarg));
+            break;
+         case 'D':
+            send.param.delay = htonl(atol(optarg));
             break;
          case 'p':
             send.param.period = htonl(atol(optarg));
@@ -333,17 +186,14 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_505L_CMD;
-//   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
-//   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
-//   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
 	
-   send.param.delay = (DFL_BLINK_DELAY_MS);
-   send.param.period = (DFL_BLINK_PERIOD_MS);
-   send.param.duration = (DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:d:p:D:")) != -1) {
       switch(opt) {
          case 'h':
             ip = optarg;
@@ -353,6 +203,9 @@ static int ode_led_505L(int argc, char **argv, struct MulticallInfo * self)
             break;
          case 'p':
             send.param.period = htonl(atol(optarg));
+            break;
+         case 'D':
+            send.param.delay = htonl(atol(optarg));
             break;
       }
    }
@@ -386,18 +239,18 @@ static int ode_led_645L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_645L_CMD;
-//   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
-//   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
-//   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
 	
-   send.param.delay = (DFL_BLINK_DELAY_MS);
-   send.param.period = (DFL_BLINK_PERIOD_MS);
-   send.param.duration = (DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:d:p:D:")) != -1) {
       switch(opt) {
+         case 'D':
+            send.param.delay = htonl(atol(optarg));
+            break;
          case 'h':
             ip = optarg;
             break;
@@ -439,18 +292,18 @@ static int ode_led_851L(int argc, char **argv, struct MulticallInfo * self)
    } __attribute__((packed)) send;
 
    send.cmd = ODE_BLINK_LED_851L_CMD;
-//   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
-//   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
-//   send.param.duration = htonl(DFL_BLINK_DUR_MS);
+   send.param.delay = htonl(DFL_BLINK_DELAY_MS);
+   send.param.period = htonl(DFL_BLINK_PERIOD_MS);
+   send.param.duration = htonl(DFL_BLINK_DUR_MS);
 	
-   send.param.delay = (DFL_BLINK_DELAY_MS);
-   send.param.period = (DFL_BLINK_PERIOD_MS);
-   send.param.duration = (DFL_BLINK_DUR_MS);
    const char *ip = "127.0.0.1";
    int len, opt;
    
-   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
+   while ((opt = getopt(argc, argv, "h:d:p:D:")) != -1) {
       switch(opt) {
+         case 'D':
+            send.param.delay = htonl(atol(optarg));
+            break;
          case 'h':
             ip = optarg;
             break;
@@ -472,54 +325,6 @@ static int ode_led_851L(int argc, char **argv, struct MulticallInfo * self)
    if (resp.cmd != ODE_BLINK_LED_851L_RESP) {
       printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
        resp.cmd, ODE_BLINK_LED_851L_RESP);
-      return 5;
-   }
-
-   return 0;
-}
-
-static int ode_led_IR(int argc, char **argv, struct MulticallInfo * self) 
-{
-   // struct to hold response from payload process
-   struct {
-      uint8_t cmd;
-      uint8_t resp;
-   } __attribute__((packed)) resp;
-
-   struct {
-      uint8_t cmd;
-      struct ODEBlinkData param;
-   } __attribute__((packed)) send;
-
-   send.cmd = ODE_BLINK_IR_LED_CMD;
-   send.param.period = htonl(DFL_IR_PERIOD_MS);
-   send.param.duration = htonl(DFL_BLINK_DUR_MS);
-   const char *ip = "127.0.0.1";
-   int len, opt;
-   
-   while ((opt = getopt(argc, argv, "h:d:p:")) != -1) {
-      switch(opt) {
-         case 'h':
-            ip = optarg;
-            break;
-         case 'd':
-            send.param.duration = htonl(atol(optarg));
-            break;
-         case 'p':
-            send.param.period = htonl(atol(optarg));
-            break;
-      }
-   }
-   
-   // send packet and wait for response
-   if ((len = socket_send_packet_and_read_response(ip, "payload", &send, 
-    sizeof(send), &resp, sizeof(resp), WAIT_MS)) <= 0) {
-      return len;
-   }
- 
-   if (resp.cmd != ODE_BLINK_IR_LED_RESP) {
-      printf("response code incorrect, Got 0x%02X expected 0x%02X\n", 
-       resp.cmd, ODE_BLINK_IR_LED_RESP);
       return 5;
    }
 
