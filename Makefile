@@ -26,7 +26,7 @@ install: $(EXECUTABLE) $(CMDS)
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_505L
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_645L 
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_851L
-	ln -sf ode-util $(INSTALL_DEST)/ode-delpoy_small_ball
+	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_small_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_large_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_door
 	$(STRIP) $(INSTALL_DEST)/$(EXECUTABLE)
