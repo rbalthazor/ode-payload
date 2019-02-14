@@ -747,7 +747,7 @@ int main(int argc, char *argv[])
    state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
       EVT_ms2tv(AUTODEPLOY_DOOR_MS), &feedback_cb, state);
 	
-   state->door_evt = EVT_sched_add_with_timestep(PROC_evt(state->proc),
+   state->door_evt = EVT_sched_add(PROC_evt(state->proc),
       EVT_ms2tv(ntohl(AUTODEPLOY_DOOR_MS)), &start_door, state);	   
 
 
