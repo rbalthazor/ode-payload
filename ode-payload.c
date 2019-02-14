@@ -10,6 +10,9 @@
 #include "ode-cmds.h"
 
 #define FEEDBACK_POLL_INTV_MS 1000
+#define AUTODEPLOY_DOOR_MS (1*60*1000)			// 1 minutes
+#define AUTODEPLOY_SMALL_BALL_MS (2*60*1000)		// 2 minutes
+#define AUTODEPLOY_LARGE_BALL_MS (3*60*1000)		// 3 minutes
 
 struct ODEPayloadState {
 	ProcessData *proc;
@@ -523,6 +526,30 @@ static int stop_large_ball(void *arg)
    return EVENT_REMOVE;
 }
 
+static int start_door(void *arg)
+{
+   // Remove any preexisting door deployment events
+   if (state->door_evt) {
+      EVT_sched_remove(PROC_evt(state->proc), state->door_evt);
+      state->door_evt = NULL;
+   }
+
+   if (state->deploy_door)
+      state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
+   if (!state->deploy_door)
+      state->deploy_door = create_named_gpio_device("DEPLOY_DOOR");
+
+   // Drive the GPIO
+   if (state->deploy_door && state->deploy_door->set){
+      state->deploy_door->set(state->deploy_door, 1);
+	  codes_for_status[2]=1;
+   }  
+
+   // Register async callback to disable GPIO
+   state->door_evt = EVT_sched_add(PROC_evt(state->proc),
+         EVT_ms2tv(ntohl(10*1000)), &stop_door, state);
+}
+
 static int stop_door(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
@@ -720,6 +747,20 @@ int main(int argc, char *argv[])
    // Add a signal handler call back for SIGINT signal
    PROC_signal(state->proc, SIGINT, &sigint_handler, PROC_evt(state->proc));
 
+   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
+
+   state->led_851L_blink_evt = EVT_sched_add_with_timestep(PROC_evt(state->proc),
+            EVT_ms2tv(ntohl(params->delay)), EVT_ms2tv(ntohl(params->period)), &blink_led_851L_cb, state);
+	
+	
+	
+   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
+	
+   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
+      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
+	
    state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
       EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
 
