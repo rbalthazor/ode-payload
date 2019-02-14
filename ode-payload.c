@@ -548,12 +548,6 @@ static int stop_door(void *arg)
 
 static int start_door(void *arg)
 {
-   // Remove any preexisting door deployment events
-   if (state->door_evt) {
-      EVT_sched_remove(PROC_evt(state->proc), state->door_evt);
-      state->door_evt = NULL;
-   }
-
    if (state->deploy_door)
       state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
    if (!state->deploy_door)
@@ -752,9 +746,9 @@ int main(int argc, char *argv[])
 
    state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
       EVT_ms2tv(AUTODEPLOY_DOOR_MS), &feedback_cb, state);
-
-   state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
-             EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &start_door, state);
+	
+   state->door_evt = EVT_sched_add_with_timestep(PROC_evt(state->proc),
+      EVT_ms2tv(ntohl(AUTODEPLOY_DOOR_MS)), &start_door, state);	   
 
 
    // Enter the main event loop
