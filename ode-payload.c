@@ -526,6 +526,26 @@ static int stop_large_ball(void *arg)
    return EVENT_REMOVE;
 }
 
+
+static int stop_door(void *arg)
+{
+   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+
+   // Turn off GPIO
+   if (state->deploy_door && state->deploy_door->set)
+      state->deploy_door->set(state->deploy_door, 0);
+
+   // Zero out our event state
+   state->door_evt = NULL;
+  
+   codes_for_status[2]=0;   
+
+   if (state->deploy_door)
+      state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
+   // Tell the event system to not reschedule this event
+   return EVENT_REMOVE;
+}
+
 static int start_door(void *arg)
 {
    // Remove any preexisting door deployment events
@@ -548,24 +568,7 @@ static int start_door(void *arg)
    // Register async callback to disable GPIO
    state->door_evt = EVT_sched_add(PROC_evt(state->proc),
          EVT_ms2tv(ntohl(10*1000)), &stop_door, state);
-}
-
-static int stop_door(void *arg)
-{
-   struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
-
-   // Turn off GPIO
-   if (state->deploy_door && state->deploy_door->set)
-      state->deploy_door->set(state->deploy_door, 0);
-
-   // Zero out our event state
-   state->door_evt = NULL;
-  
-   codes_for_status[2]=0;   
-
-   if (state->deploy_door)
-      state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
-   // Tell the event system to not reschedule this event
+	
    return EVENT_REMOVE;
 }
 
@@ -748,21 +751,11 @@ int main(int argc, char *argv[])
    PROC_signal(state->proc, SIGINT, &sigint_handler, PROC_evt(state->proc));
 
    state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
+      EVT_ms2tv(AUTODEPLOY_DOOR_MS), &feedback_cb, state);
 
-   state->led_851L_blink_evt = EVT_sched_add_with_timestep(PROC_evt(state->proc),
-            EVT_ms2tv(ntohl(params->delay)), EVT_ms2tv(ntohl(params->period)), &blink_led_851L_cb, state);
-	
-	
-	
-   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
-	
-   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
-	
-   state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
+   state->led_851L_blink_evt = EVT_sched_add(PROC_evt(state->proc),
+             EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &start_door, state);
+
 
    // Enter the main event loop
    EVT_start_loop(PROC_evt(state->proc));
