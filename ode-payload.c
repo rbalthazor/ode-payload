@@ -87,24 +87,24 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    struct ODEStatus status;
    struct timeval now, delta;
 
-   EVT_get_monotonic_time(PROC_evt(state->proc), &now);
+   EVT_get_monotonic_time(&now);
    
-	status.small_ball_sw=codes_for_status[0];
-	status.large_ball_sw=codes_for_status[1];
-	status.MW_sw=codes_for_status[2];
-	status.small_ball_fb=codes_for_status[3];
-	status.large_ball_fb=codes_for_status[4];
-	status.MW_fb=codes_for_status[5];
-	status.cree_led=codes_for_status[6];
-	status.led_505L=codes_for_status[7];
-	status.led_645L=codes_for_status[8];
-	status.led_851L=codes_for_status[9];
-	status.led_IR=codes_for_status[10];
-	status.enable_5V=codes_for_status[11];
-	status.small_ball_fb_time = htonl(times_for_status[0]);
-	status.large_ball_fb_time = htonl(times_for_status[1]);
-	status.MW_fb_time = htonl(times_for_status[2]);
-	status.curr_time = htonl(time(NULL));
+   status.small_ball_sw=codes_for_status[0];
+   status.large_ball_sw=codes_for_status[1];
+   status.MW_sw=codes_for_status[2];
+   status.small_ball_fb=codes_for_status[3];
+   status.large_ball_fb=codes_for_status[4];
+   status.MW_fb=codes_for_status[5];
+   status.cree_led=codes_for_status[6];
+   status.led_505L=codes_for_status[7];
+   status.led_645L=codes_for_status[8];
+   status.led_851L=codes_for_status[9];
+   status.led_IR=codes_for_status[10];
+   status.enable_5V=codes_for_status[11];
+   status.small_ball_fb_time = htonl(times_for_status[0]);
+   status.large_ball_fb_time = htonl(times_for_status[1]);
+   status.MW_fb_time = htonl(times_for_status[2]);
+   status.curr_time = htonl(time(NULL));
 
    timersub(&delta, &state->small_ball_delay_time, &now);
    status.time_until_small = htonl(delta.tv_sec);
