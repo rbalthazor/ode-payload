@@ -106,11 +106,11 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
    status.MW_fb_time = htonl(times_for_status[2]);
    status.curr_time = htonl(time(NULL));
 
-   timersub(&delta, &state->small_ball_delay_time, &now);
+   timersub(&state->small_ball_delay_time, &now, &delta);
    status.time_until_small = htonl(delta.tv_sec);
-   timersub(&delta, &state->large_ball_delay_time, &now);
+   timersub(&state->large_ball_delay_time, &now, &delta);
    status.time_until_large = htonl(delta.tv_sec);
-   timersub(&delta, &state->door_delay_time, &now);
+   timersub(&state->door_delay_time, &now, &delta);
    status.time_until_door = htonl(delta.tv_sec);
 
    // Send the response
