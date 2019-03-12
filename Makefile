@@ -22,6 +22,7 @@ install: $(EXECUTABLE) $(CMDS)
 	cp $(EXECUTABLE) $(INSTALL_DEST)
 	cp $(CMDS) $(INSTALL_DEST)
 	ln -sf ode-util $(INSTALL_DEST)/ode-status
+	ln -sf ode-util $(INSTALL_DEST)/ode-telemetry
 	ln -sf ode-util $(INSTALL_DEST)/ode-cree
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_505L
 	ln -sf ode-util $(INSTALL_DEST)/ode-led_645L 
@@ -29,6 +30,9 @@ install: $(EXECUTABLE) $(CMDS)
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_small_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_large_ball
 	ln -sf ode-util $(INSTALL_DEST)/ode-deploy_door
+	ln -sf ode-util $(INSTALL_DEST)/ode-delayed-deploy-small-ball
+	ln -sf ode-util $(INSTALL_DEST)/ode-delayed-deploy-large-ball
+	ln -sf ode-util $(INSTALL_DEST)/ode-delayed-deploy-door
 	$(STRIP) $(INSTALL_DEST)/$(EXECUTABLE)
 	cp $(CMD_FILE) $(ETC_PATH)
 

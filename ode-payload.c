@@ -10,9 +10,20 @@
 #include "ode-cmds.h"
 
 #define FEEDBACK_POLL_INTV_MS 1000
-#define AUTODEPLOY_DOOR_MS (1*60*1000)			// 1 minutes
-#define AUTODEPLOY_SMALL_BALL_MS (2*60*1000)		// 2 minutes
-#define AUTODEPLOY_LARGE_BALL_MS (3*60*1000)		// 3 minutes
+#define DFL_BALL_TIME_MS (5*1000)
+#define DFL_DOOR_TIME_MS (10*1000)
+#define DFL_SMALL_BALL_TIME (60*60*24*135)
+#define DFL_LARGE_BALL_TIME (60*60*24*120)
+#define DFL_DOOR_TIME (60*60*24*60)
+
+struct ODECriticalParams {
+   uint32_t small_ball_time;
+   uint32_t large_ball_time;
+   uint32_t door_time;
+   uint8_t small_ball_deployed;
+   uint8_t large_ball_deployed;
+   uint8_t door_deployed;
+} __attribute__((packed));
 
 struct ODEPayloadState {
 	ProcessData *proc;
@@ -47,21 +58,25 @@ struct ODEPayloadState {
 	void *led_IR_blink_evt;
 	void *led_IR_finish_evt;
 	
-	void *small_ball_evt;
+	void *small_ball_evt, *small_ball_delay_evt;
+   struct timeval small_ball_delay_time;
 	struct GPIOSensor *deploy_small_ball;
 	
-	void *large_ball_evt;
+	void *large_ball_evt, *large_ball_delay_evt;
+   struct timeval large_ball_delay_time;
 	struct GPIOSensor *deploy_large_ball;
 	
-	void *door_evt;
+	void *door_evt, *door_delay_evt;
+   struct timeval door_delay_time;
 	struct GPIOSensor *deploy_door;
 	
 	// struct GPIOSensor *Large_Ball_Feedback;
 	void *feedback_evt;
 };
 
+static void setup_delayed_events(struct ODEPayloadState *ode);
+
 static struct ODEPayloadState *state = NULL;
-//static struct ODEStatus *sc_status = NULL;
 static char codes_for_status[12]={0};
 static time_t times_for_status[3] = { 0, 0, 0 };
 
@@ -70,6 +85,9 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEStatus status;
+   struct timeval now, delta;
+
+   EVT_get_monotonic_time(PROC_evt(state->proc), &now);
    
 	status.small_ball_sw=codes_for_status[0];
 	status.large_ball_sw=codes_for_status[1];
@@ -87,6 +105,13 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
 	status.large_ball_fb_time = htonl(times_for_status[1]);
 	status.MW_fb_time = htonl(times_for_status[2]);
 	status.curr_time = htonl(time(NULL));
+
+   timersub(&delta, &state->small_ball_delay_time, &now);
+   status.time_until_small = htonl(delta.tv_sec);
+   timersub(&delta, &state->large_ball_delay_time, &now);
+   status.time_until_large = htonl(delta.tv_sec);
+   timersub(&delta, &state->door_delay_time, &now);
+   status.time_until_door = htonl(delta.tv_sec);
 
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
@@ -490,6 +515,7 @@ void blink_led_851L(int socket, unsigned char cmd, void * data, size_t dataLen,
 static int stop_small_ball(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   struct ODECriticalParams cs;
 
    // Turn off GPIO
    if (state->deploy_small_ball && state->deploy_small_ball->set)
@@ -503,6 +529,12 @@ static int stop_small_ball(void *arg)
    if (state->deploy_small_ball)
       state->deploy_small_ball->sensor.close((struct Sensor**)&state->deploy_small_ball);
 
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return EVENT_REMOVE;
+   cs.small_ball_deployed = 1;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+   state->small_ball_delay_time.tv_sec = 0;
+
    // Tell the event system to not reschedule this event
    return EVENT_REMOVE;
 }
@@ -510,6 +542,7 @@ static int stop_small_ball(void *arg)
 static int stop_large_ball(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   struct ODECriticalParams cs;
 
    // Turn off GPIO
    if (state->deploy_large_ball && state->deploy_large_ball->set)
@@ -522,6 +555,13 @@ static int stop_large_ball(void *arg)
 
    if (state->deploy_large_ball)
       state->deploy_large_ball->sensor.close((struct Sensor**)&state->deploy_large_ball);
+
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return EVENT_REMOVE;
+   cs.large_ball_deployed = 1;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+   state->large_ball_delay_time.tv_sec = 0;
+
    // Tell the event system to not reschedule this event
    return EVENT_REMOVE;
 }
@@ -530,6 +570,7 @@ static int stop_large_ball(void *arg)
 static int stop_door(void *arg)
 {
    struct ODEPayloadState *state = (struct ODEPayloadState*)arg;
+   struct ODECriticalParams cs;
 
    // Turn off GPIO
    if (state->deploy_door && state->deploy_door->set)
@@ -543,41 +584,21 @@ static int stop_door(void *arg)
    if (state->deploy_door)
       state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
    // Tell the event system to not reschedule this event
-   return EVENT_REMOVE;
-}
 
-static int start_door(void *arg)
-{
-   if (state->deploy_door)
-      state->deploy_door->sensor.close((struct Sensor**)&state->deploy_door);
-   if (!state->deploy_door)
-      state->deploy_door = create_named_gpio_device("DEPLOY_DOOR");
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return EVENT_REMOVE;
+   cs.door_deployed = 1;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+   state->door_delay_time.tv_sec = 0;
 
-   // Drive the GPIO
-   if (state->deploy_door && state->deploy_door->set){
-      state->deploy_door->set(state->deploy_door, 1);
-	  codes_for_status[2]=1;
-   }  
-
-   // Register async callback to disable GPIO
-   state->door_evt = EVT_sched_add(PROC_evt(state->proc),
-         EVT_ms2tv(ntohl(10*1000)), &stop_door, state);
-	
    return EVENT_REMOVE;
 }
 
 //__________________________________________________________________
 //deployment functions
 
-void deploy_small_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
-                     struct sockaddr_in * src)
+static void deploy_small_ball_dur(uint32_t duration)
 {
-   struct ODEDeployData *param = (struct ODEDeployData*)data;
-   uint8_t resp = 1;
-
-   if (dataLen != sizeof(*param))
-      return;
-
    // Remove any preexisting small_ball deployment events
    if (state->small_ball_evt) {
       EVT_sched_remove(PROC_evt(state->proc), state->small_ball_evt);
@@ -598,13 +619,10 @@ void deploy_small_ball(int socket, unsigned char cmd, void * data, size_t dataLe
 
    // Register async callback to disable GPIO
    state->small_ball_evt = EVT_sched_add(PROC_evt(state->proc),
-         EVT_ms2tv(ntohl(param->duration)), &stop_small_ball, state);
-
-   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_SMALL_BALL_RESP, &resp,
-        sizeof(resp), src);
+         EVT_ms2tv(duration), &stop_small_ball, state);
 }
 
-void deploy_large_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
+void deploy_small_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEDeployData *param = (struct ODEDeployData*)data;
@@ -613,6 +631,14 @@ void deploy_large_ball(int socket, unsigned char cmd, void * data, size_t dataLe
    if (dataLen != sizeof(*param))
       return;
 
+   deploy_small_ball_dur(ntohl(param->duration));
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_SMALL_BALL_RESP, &resp,
+        sizeof(resp), src);
+}
+
+static void deploy_large_ball_dur(uint32_t duration)
+{
    // Remove any preexisting large_ball deployment events
    if (state->large_ball_evt) {
       EVT_sched_remove(PROC_evt(state->proc), state->large_ball_evt);
@@ -632,13 +658,10 @@ void deploy_large_ball(int socket, unsigned char cmd, void * data, size_t dataLe
 
    // Register async callback to disable GPIO
    state->large_ball_evt = EVT_sched_add(PROC_evt(state->proc),
-         EVT_ms2tv(ntohl(param->duration)), &stop_large_ball, state);
-
-   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_LARGE_BALL_RESP, &resp,
-        sizeof(resp), src);
+         EVT_ms2tv(duration), &stop_large_ball, state);
 }
 
-void deploy_door(int socket, unsigned char cmd, void * data, size_t dataLen,
+void deploy_large_ball(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEDeployData *param = (struct ODEDeployData*)data;
@@ -647,6 +670,14 @@ void deploy_door(int socket, unsigned char cmd, void * data, size_t dataLen,
    if (dataLen != sizeof(*param))
       return;
 
+   deploy_large_ball_dur(ntohl(param->duration));
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_LARGE_BALL_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void deploy_door_dur(uint32_t duration)
+{
    // Remove any preexisting door deployment events
    if (state->door_evt) {
       EVT_sched_remove(PROC_evt(state->proc), state->door_evt);
@@ -666,7 +697,19 @@ void deploy_door(int socket, unsigned char cmd, void * data, size_t dataLen,
 
    // Register async callback to disable GPIO
    state->door_evt = EVT_sched_add(PROC_evt(state->proc),
-         EVT_ms2tv(ntohl(param->duration)), &stop_door, state);
+         EVT_ms2tv(duration), &stop_door, state);
+}
+
+void deploy_door(int socket, unsigned char cmd, void * data, size_t dataLen,
+                     struct sockaddr_in * src)
+{
+   struct ODEDeployData *param = (struct ODEDeployData*)data;
+   uint8_t resp = 1;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   deploy_door_dur(ntohl(param->duration));
 
    PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_DOOR_RESP, &resp,
         sizeof(resp), src);
@@ -706,7 +749,199 @@ static int feedback_cb(void *arg)
 
    // Create the event to check the Small_Ball
 //   codes_for_status[5] = state->Small_Ball_Feedback->read(state->Small_Ball_Feedback);
-	
+
+static int deploy_small_ball_evt(void *arg)
+{
+   deploy_small_ball_dur(DFL_BALL_TIME_MS);
+   return EVENT_REMOVE;
+}
+
+static int deploy_large_ball_evt(void *arg)
+{
+   deploy_large_ball_dur(DFL_BALL_TIME_MS);
+   return EVENT_REMOVE;
+}
+
+static int deploy_door_evt(void *arg)
+{
+   deploy_door_dur(DFL_DOOR_TIME_MS);
+   return EVENT_REMOVE;
+}
+
+static void setup_delayed_events(struct ODEPayloadState *ode)
+{
+   struct ODECriticalParams cs;
+   struct timeval now, diff;
+
+   if (!ode)
+      return;
+
+   if (ode->small_ball_delay_evt)
+      EVT_sched_remove(PROC_evt(ode->proc), ode->small_ball_delay_evt);
+   if (ode->large_ball_delay_evt)
+      EVT_sched_remove(PROC_evt(ode->proc), ode->large_ball_delay_evt);
+   if (ode->door_delay_evt)
+      EVT_sched_remove(PROC_evt(ode->proc), ode->door_delay_evt);
+   ode->small_ball_delay_evt = NULL;
+   ode->large_ball_delay_evt = NULL;
+   ode->door_delay_evt = NULL;
+   ode->small_ball_delay_time.tv_sec = ode->small_ball_delay_time.tv_usec = 0;
+   ode->large_ball_delay_time = ode->door_delay_time=ode->small_ball_delay_time;
+
+   gettimeofday(&now, NULL);
+
+   if (sizeof(cs) != PROC_read_critical_state(ode->proc, &cs, sizeof(cs))) {
+      memset(&cs, 0, sizeof(cs));
+      if (DFL_SMALL_BALL_TIME > 0)
+         cs.small_ball_time = now.tv_sec + DFL_SMALL_BALL_TIME;
+      if (DFL_LARGE_BALL_TIME > 0)
+         cs.large_ball_time = now.tv_sec + DFL_LARGE_BALL_TIME;
+      if (DFL_DOOR_TIME > 0)
+         cs.door_time = now.tv_sec + DFL_DOOR_TIME;
+
+      PROC_save_critical_state(ode->proc, &cs, sizeof(cs));
+   }
+
+   if (cs.small_ball_time > 0) {
+      if (cs.small_ball_time < now.tv_sec) {
+         if (!cs.small_ball_deployed)
+            deploy_small_ball_evt(ode);
+      }
+      else {
+         diff.tv_usec = 0;
+         diff.tv_sec = cs.small_ball_time - now.tv_sec;
+         ode->small_ball_delay_time.tv_sec = cs.small_ball_time;
+         ode->small_ball_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
+               diff, &deploy_small_ball_evt, ode);
+      }
+   }
+
+   if (cs.large_ball_time > 0) {
+      if (cs.large_ball_time < now.tv_sec) {
+         if (!cs.large_ball_deployed)
+            deploy_large_ball_evt(ode);
+      }
+      else {
+         diff.tv_usec = 0;
+         diff.tv_sec = cs.large_ball_time - now.tv_sec;
+         ode->large_ball_delay_time.tv_sec = cs.large_ball_time;
+         ode->large_ball_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
+               diff, &deploy_large_ball_evt, ode);
+      }
+   }
+
+   if (cs.door_time > 0) {
+      if (cs.door_time < now.tv_sec) {
+         if (!cs.door_deployed)
+            deploy_door_evt(ode);
+      }
+      else {
+         diff.tv_usec = 0;
+         diff.tv_sec = cs.door_time - now.tv_sec;
+         ode->door_delay_time.tv_sec = cs.door_time;
+         ode->door_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
+               diff, &deploy_door_evt, ode);
+      }
+   }
+
+}
+
+void deploy_door_delay(int socket, unsigned char cmd, void * data,
+      size_t dataLen, struct sockaddr_in * src)
+{
+   struct ODEDeployDelayData *param = (struct ODEDeployDelayData*)data;
+   uint8_t resp = 1;
+   struct timeval depl_time;
+   struct ODECriticalParams cs;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   gettimeofday(&depl_time, NULL);
+
+   if (ntohl(param->mode == 1))
+      depl_time.tv_sec = ntohl(param->delay);
+   else if (ntohl(param->mode == 2))
+      depl_time.tv_sec += ntohl(param->delay);
+   else
+      return;
+
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return;
+   cs.door_time = depl_time.tv_sec;
+   cs.door_deployed = 0;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+
+   setup_delayed_events(state);
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_DOOR_DELAY_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void deploy_small_ball_delay(int socket, unsigned char cmd, void * data,
+      size_t dataLen, struct sockaddr_in * src)
+{
+   struct ODEDeployDelayData *param = (struct ODEDeployDelayData*)data;
+   uint8_t resp = 1;
+   struct timeval depl_time;
+   struct ODECriticalParams cs;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   gettimeofday(&depl_time, NULL);
+
+   if (ntohl(param->mode == 1))
+      depl_time.tv_sec = ntohl(param->delay);
+   else if (ntohl(param->mode == 2))
+      depl_time.tv_sec += ntohl(param->delay);
+   else
+      return;
+
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return;
+   cs.small_ball_time = depl_time.tv_sec;
+   cs.small_ball_deployed = 0;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+
+   setup_delayed_events(state);
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_SMALL_BALL_DELAY_RESP, &resp,
+        sizeof(resp), src);
+}
+
+void deploy_large_ball_delay(int socket, unsigned char cmd, void * data,
+      size_t dataLen, struct sockaddr_in * src)
+{
+   struct ODEDeployDelayData *param = (struct ODEDeployDelayData*)data;
+   uint8_t resp = 1;
+   struct timeval depl_time;
+   struct ODECriticalParams cs;
+
+   if (dataLen != sizeof(*param))
+      return;
+
+   gettimeofday(&depl_time, NULL);
+
+   if (ntohl(param->mode == 1))
+      depl_time.tv_sec = ntohl(param->delay);
+   else if (ntohl(param->mode == 2))
+      depl_time.tv_sec += ntohl(param->delay);
+   else
+      return;
+
+   if (sizeof(cs) != PROC_read_critical_state(state->proc, &cs, sizeof(cs)))
+      return;
+   cs.large_ball_time = depl_time.tv_sec;
+   cs.large_ball_deployed = 0;
+   PROC_save_critical_state(state->proc, &cs, sizeof(cs));
+
+   setup_delayed_events(state);
+
+   PROC_cmd_sockaddr(state->proc, ODE_DEPLOY_LARGE_BALL_DELAY_RESP, &resp,
+        sizeof(resp), src);
+}
+
 // Simple SIGINT handler for cleanup
 static int sigint_handler(int signum, void *arg)
 {
@@ -745,12 +980,9 @@ int main(int argc, char *argv[])
    PROC_signal(state->proc, SIGINT, &sigint_handler, PROC_evt(state->proc));
 
    state->feedback_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(AUTODEPLOY_DOOR_MS), &feedback_cb, state);
+      EVT_ms2tv(FEEDBACK_POLL_INTV_MS), &feedback_cb, state);
 	
-   state->door_evt = EVT_sched_add(PROC_evt(state->proc),
-      EVT_ms2tv(ntohl(AUTODEPLOY_DOOR_MS)), &start_door, state);	   
-
-
+   setup_delayed_events(state);
    // Enter the main event loop
    EVT_start_loop(PROC_evt(state->proc));
 
@@ -811,7 +1043,7 @@ int main(int argc, char *argv[])
       // Turn off the cree GPIO if able
       if (state->enable_5V->set)
          state->enable_5V->set(state->enable_5V, 0);
-	 codes_for_status[11]=0;
+	   codes_for_status[11]=0;
       // Delete the cree GPIO sensor
       state->enable_5V->sensor.close((struct Sensor **)&state->enable_5V);
    }	
@@ -820,7 +1052,7 @@ int main(int argc, char *argv[])
       // Turn off the cree GPIO if able
       if (state->cree->set)
          state->cree->set(state->cree, 0);
-	 codes_for_status[6]=0;
+	   codes_for_status[6]=0;
       // Delete the cree GPIO sensor
       state->cree->sensor.close((struct Sensor **)&state->cree);
    }

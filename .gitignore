@@ -1,3 +1,4 @@
 *.o
 ode-util
 ode-payload
+.*.swp

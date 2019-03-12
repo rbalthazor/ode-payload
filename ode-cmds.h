@@ -46,6 +46,16 @@
 #define ODE_SET_LED_DURATION_CMD 15
 #define ODE_SET_LED_DURATION_RESP (ODE_SET_LED_DURATION_CMD | 0x80)
 
+#define ODE_DEPLOY_SMALL_BALL_DELAY_CMD 16
+#define ODE_DEPLOY_SMALL_BALL_DELAY_RESP (ODE_DEPLOY_SMALL_BALL_DELAY_CMD | 0x80)
+
+#define ODE_DEPLOY_LARGE_BALL_DELAY_CMD 17
+#define ODE_DEPLOY_LARGE_BALL_DELAY_RESP (ODE_DEPLOY_LARGE_BALL_DELAY_CMD | 0x80)
+
+#define ODE_DEPLOY_DOOR_DELAY_CMD 18
+#define ODE_DEPLOY_DOOR_DELAY_RESP (ODE_DEPLOY_DOOR_DELAY_CMD | 0x80)
+
+
 struct ODEStatus {
    uint8_t small_ball_sw; //0
    uint8_t large_ball_sw; 
@@ -63,6 +73,9 @@ struct ODEStatus {
    uint32_t large_ball_fb_time; //4
    uint32_t MW_fb_time;
    uint32_t curr_time;
+   uint32_t time_until_small;
+   uint32_t time_until_large;
+   uint32_t time_until_door;
 } __attribute__((packed));
 
 struct ODEBlinkData {
@@ -74,6 +87,12 @@ struct ODEBlinkData {
 
 struct ODEDeployData {
    uint32_t duration;
+} __attribute__((packed));
+
+struct ODEDeployDelayData {
+   uint32_t duration;
+   uint32_t mode;
+   uint32_t delay;
 } __attribute__((packed));
 
 struct ODEFeedBackData {
