@@ -127,17 +127,17 @@ static int ode_status(int argc, char **argv, struct MulticallInfo * self)
 
    printf("Small Ball auto-deployment delta: %u s\n", ntohl(resp.status.time_until_small));
    depl = now + ntohl(resp.status.time_until_small);
-   printf("Small Ball auto-deployment time: %s UTC\n", asctime(gmtime(&depl)));
+   printf("Small Ball auto-deployment time: %s\n", asctime(gmtime(&depl)));
 
    printf("Large Ball auto-deployment delta: %u s\n",
       ntohl(resp.status.time_until_large));
    depl = now + ntohl(resp.status.time_until_large);
-   printf("Large Ball auto-deployment time: %s UTC\n", asctime(gmtime(&depl)));
+   printf("Large Ball auto-deployment time: %s\n", asctime(gmtime(&depl)));
 
    printf("Door auto-deployment delta: %u s\n",
       ntohl(resp.status.time_until_door));
    depl = now + ntohl(resp.status.time_until_door);
-   printf("Door auto-deployment time: %s UTC\n", asctime(gmtime(&depl)));
+   printf("Door auto-deployment time: %s\n", asctime(gmtime(&depl)));
 
    return 0;
 }
