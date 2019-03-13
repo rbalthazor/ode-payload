@@ -12,12 +12,12 @@
 #define FEEDBACK_POLL_INTV_MS 1000
 #define DFL_BALL_TIME_MS (5*1000)
 #define DFL_DOOR_TIME_MS (10*1000)
-// #define DFL_SMALL_BALL_TIME (60*60*24*100)
-// #define DFL_LARGE_BALL_TIME (60*60*24*90)
-// #define DFL_DOOR_TIME (60*60*24*60)
-#define DFL_SMALL_BALL_TIME (60*5)
-#define DFL_LARGE_BALL_TIME (60*4)
-#define DFL_DOOR_TIME (60*3)
+#define DFL_SMALL_BALL_TIME (60*60*24*100)
+#define DFL_LARGE_BALL_TIME (60*60*24*90)
+#define DFL_DOOR_TIME (60*60*24*60)
+// #define DFL_SMALL_BALL_TIME (60*5)
+// #define DFL_LARGE_BALL_TIME (60*4)
+// #define DFL_DOOR_TIME (60*3)
 
 struct ODECriticalParams {
    uint32_t small_ball_time;
