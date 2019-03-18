@@ -59,15 +59,15 @@ struct ODEPayloadState {
 	void *led_IR_finish_evt;
 	
 	void *small_ball_evt, *small_ball_delay_evt;
-   struct timeval small_ball_delay_time;
+   time_t small_ball_delay_time;
 	struct GPIOSensor *deploy_small_ball;
 	
 	void *large_ball_evt, *large_ball_delay_evt;
-   struct timeval large_ball_delay_time;
+   time_t large_ball_delay_time;
 	struct GPIOSensor *deploy_large_ball;
 	
 	void *door_evt, *door_delay_evt;
-   struct timeval door_delay_time;
+   time_t door_delay_time;
 	struct GPIOSensor *deploy_door;
 	
 	// struct GPIOSensor *Large_Ball_Feedback;
@@ -85,33 +85,37 @@ void payload_status(int socket, unsigned char cmd, void * data, size_t dataLen,
                      struct sockaddr_in * src)
 {
    struct ODEStatus status;
-   struct timeval now, delta;
+   time_t now;
 
-   EVT_get_monotonic_time(PROC_evt(state->proc), &now);
+   now = time(NULL);
    
-	status.small_ball_sw=codes_for_status[0];
-	status.large_ball_sw=codes_for_status[1];
-	status.MW_sw=codes_for_status[2];
-	status.small_ball_fb=codes_for_status[3];
-	status.large_ball_fb=codes_for_status[4];
-	status.MW_fb=codes_for_status[5];
-	status.cree_led=codes_for_status[6];
-	status.led_505L=codes_for_status[7];
-	status.led_645L=codes_for_status[8];
-	status.led_851L=codes_for_status[9];
-	status.led_IR=codes_for_status[10];
-	status.enable_5V=codes_for_status[11];
-	status.small_ball_fb_time = htonl(times_for_status[0]);
-	status.large_ball_fb_time = htonl(times_for_status[1]);
-	status.MW_fb_time = htonl(times_for_status[2]);
-	status.curr_time = htonl(time(NULL));
+   status.small_ball_sw=codes_for_status[0];
+   status.large_ball_sw=codes_for_status[1];
+   status.MW_sw=codes_for_status[2];
+   status.small_ball_fb=codes_for_status[3];
+   status.large_ball_fb=codes_for_status[4];
+   status.MW_fb=codes_for_status[5];
+   status.cree_led=codes_for_status[6];
+   status.led_505L=codes_for_status[7];
+   status.led_645L=codes_for_status[8];
+   status.led_851L=codes_for_status[9];
+   status.led_IR=codes_for_status[10];
+   status.enable_5V=codes_for_status[11];
+   status.small_ball_fb_time = htonl(times_for_status[0]);
+   status.large_ball_fb_time = htonl(times_for_status[1]);
+   status.MW_fb_time = htonl(times_for_status[2]);
+   status.curr_time = htonl(time(NULL));
 
-   timersub(&delta, &state->small_ball_delay_time, &now);
-   status.time_until_small = htonl(delta.tv_sec);
-   timersub(&delta, &state->large_ball_delay_time, &now);
-   status.time_until_large = htonl(delta.tv_sec);
-   timersub(&delta, &state->door_delay_time, &now);
-   status.time_until_door = htonl(delta.tv_sec);
+   status.time_until_small = 0;
+   status.time_until_large = 0;
+   status.time_until_door = 0;
+
+   if (state->small_ball_delay_time > 0)
+      status.time_until_small = htonl(state->small_ball_delay_time - now);
+   if (state->large_ball_delay_time > 0)
+      status.time_until_large = htonl(state->large_ball_delay_time - now);
+   if (state->door_delay_time > 0)
+      status.time_until_door = htonl(state->door_delay_time - now);
 
    // Send the response
    PROC_cmd_sockaddr(state->proc, CMD_STATUS_RESPONSE, &status,
@@ -533,7 +537,7 @@ static int stop_small_ball(void *arg)
       return EVENT_REMOVE;
    cs.small_ball_deployed = 1;
    PROC_save_critical_state(state->proc, &cs, sizeof(cs));
-   state->small_ball_delay_time.tv_sec = 0;
+   state->small_ball_delay_time = 0;
 
    // Tell the event system to not reschedule this event
    return EVENT_REMOVE;
@@ -560,7 +564,7 @@ static int stop_large_ball(void *arg)
       return EVENT_REMOVE;
    cs.large_ball_deployed = 1;
    PROC_save_critical_state(state->proc, &cs, sizeof(cs));
-   state->large_ball_delay_time.tv_sec = 0;
+   state->large_ball_delay_time = 0;
 
    // Tell the event system to not reschedule this event
    return EVENT_REMOVE;
@@ -589,7 +593,7 @@ static int stop_door(void *arg)
       return EVENT_REMOVE;
    cs.door_deployed = 1;
    PROC_save_critical_state(state->proc, &cs, sizeof(cs));
-   state->door_delay_time.tv_sec = 0;
+   state->door_delay_time = 0;
 
    return EVENT_REMOVE;
 }
@@ -771,7 +775,8 @@ static int deploy_door_evt(void *arg)
 static void setup_delayed_events(struct ODEPayloadState *ode)
 {
    struct ODECriticalParams cs;
-   struct timeval now, diff;
+   struct timeval diff;
+   time_t now;
 
    if (!ode)
       return;
@@ -785,60 +790,60 @@ static void setup_delayed_events(struct ODEPayloadState *ode)
    ode->small_ball_delay_evt = NULL;
    ode->large_ball_delay_evt = NULL;
    ode->door_delay_evt = NULL;
-   ode->small_ball_delay_time.tv_sec = ode->small_ball_delay_time.tv_usec = 0;
-   ode->large_ball_delay_time = ode->door_delay_time=ode->small_ball_delay_time;
+   ode->small_ball_delay_time = 0;
+   ode->large_ball_delay_time = ode->door_delay_time = 0;
 
-   gettimeofday(&now, NULL);
+   now = time(NULL);
 
    if (sizeof(cs) != PROC_read_critical_state(ode->proc, &cs, sizeof(cs))) {
       memset(&cs, 0, sizeof(cs));
       if (DFL_SMALL_BALL_TIME > 0)
-         cs.small_ball_time = now.tv_sec + DFL_SMALL_BALL_TIME;
+         cs.small_ball_time = now + DFL_SMALL_BALL_TIME;
       if (DFL_LARGE_BALL_TIME > 0)
-         cs.large_ball_time = now.tv_sec + DFL_LARGE_BALL_TIME;
+         cs.large_ball_time = now + DFL_LARGE_BALL_TIME;
       if (DFL_DOOR_TIME > 0)
-         cs.door_time = now.tv_sec + DFL_DOOR_TIME;
+         cs.door_time = now + DFL_DOOR_TIME;
 
       PROC_save_critical_state(ode->proc, &cs, sizeof(cs));
    }
 
    if (cs.small_ball_time > 0) {
-      if (cs.small_ball_time < now.tv_sec) {
+      if (cs.small_ball_time < now) {
          if (!cs.small_ball_deployed)
             deploy_small_ball_evt(ode);
       }
       else {
          diff.tv_usec = 0;
-         diff.tv_sec = cs.small_ball_time - now.tv_sec;
-         ode->small_ball_delay_time.tv_sec = cs.small_ball_time;
+         diff.tv_sec = cs.small_ball_time - now;
+         ode->small_ball_delay_time = cs.small_ball_time;
          ode->small_ball_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
                diff, &deploy_small_ball_evt, ode);
       }
    }
 
    if (cs.large_ball_time > 0) {
-      if (cs.large_ball_time < now.tv_sec) {
+      if (cs.large_ball_time < now) {
          if (!cs.large_ball_deployed)
             deploy_large_ball_evt(ode);
       }
       else {
          diff.tv_usec = 0;
-         diff.tv_sec = cs.large_ball_time - now.tv_sec;
-         ode->large_ball_delay_time.tv_sec = cs.large_ball_time;
+         diff.tv_sec = cs.large_ball_time - now;
+         ode->large_ball_delay_time = cs.large_ball_time;
          ode->large_ball_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
                diff, &deploy_large_ball_evt, ode);
       }
    }
 
    if (cs.door_time > 0) {
-      if (cs.door_time < now.tv_sec) {
+      if (cs.door_time < now) {
          if (!cs.door_deployed)
             deploy_door_evt(ode);
       }
       else {
          diff.tv_usec = 0;
-         diff.tv_sec = cs.door_time - now.tv_sec;
-         ode->door_delay_time.tv_sec = cs.door_time;
+         ode->door_delay_time = cs.door_time;
+         diff.tv_sec = ode->door_delay_time - now;
          ode->door_delay_evt = EVT_sched_add(PROC_evt(ode->proc),
                diff, &deploy_door_evt, ode);
       }
@@ -859,9 +864,9 @@ void deploy_door_delay(int socket, unsigned char cmd, void * data,
 
    gettimeofday(&depl_time, NULL);
 
-   if (ntohl(param->mode == 1))
+   if (ntohl(param->mode) == 1)
       depl_time.tv_sec = ntohl(param->delay);
-   else if (ntohl(param->mode == 2))
+   else if (ntohl(param->mode) == 2)
       depl_time.tv_sec += ntohl(param->delay);
    else
       return;
@@ -891,9 +896,9 @@ void deploy_small_ball_delay(int socket, unsigned char cmd, void * data,
 
    gettimeofday(&depl_time, NULL);
 
-   if (ntohl(param->mode == 1))
+   if (ntohl(param->mode) == 1)
       depl_time.tv_sec = ntohl(param->delay);
-   else if (ntohl(param->mode == 2))
+   else if (ntohl(param->mode) == 2)
       depl_time.tv_sec += ntohl(param->delay);
    else
       return;
@@ -923,9 +928,9 @@ void deploy_large_ball_delay(int socket, unsigned char cmd, void * data,
 
    gettimeofday(&depl_time, NULL);
 
-   if (ntohl(param->mode == 1))
+   if (ntohl(param->mode) == 1)
       depl_time.tv_sec = ntohl(param->delay);
-   else if (ntohl(param->mode == 2))
+   else if (ntohl(param->mode) == 2)
       depl_time.tv_sec += ntohl(param->delay);
    else
       return;
